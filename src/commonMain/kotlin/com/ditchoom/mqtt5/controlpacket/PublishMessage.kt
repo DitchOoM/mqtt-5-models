@@ -1,4 +1,6 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "KDocUnresolvedReference", "EXPERIMENTAL_UNSIGNED_LITERALS", "DuplicatedCode")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "KDocUnresolvedReference", "EXPERIMENTAL_UNSIGNED_LITERALS", "DuplicatedCode",
+    "EXPERIMENTAL_OVERRIDE"
+)
 
 package com.ditchoom.mqtt5.controlpacket
 
