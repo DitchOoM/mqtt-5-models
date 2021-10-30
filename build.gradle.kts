@@ -11,7 +11,6 @@ group = "com.ditchoom"
 version = "$libraryVersionPrefix.0-SNAPSHOT"
 
 repositories {
-    mavenLocal()
     google()
     mavenCentral()
 }
@@ -47,9 +46,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-//                implementation("com.ditchoom:mqtt-base-models:1.0.4")
-                implementation("com.ditchoom:mqtt-base-models:1.0.5")
-                implementation("com.ditchoom:buffer:1.0.44")
+                implementation("com.ditchoom:mqtt-base-models:1.0.6")
+                implementation("com.ditchoom:buffer:1.0.46")
             }
         }
         val commonTest by getting {
