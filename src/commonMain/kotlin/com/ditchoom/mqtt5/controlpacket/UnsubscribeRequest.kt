@@ -21,8 +21,20 @@ import com.ditchoom.mqtt5.controlpacket.properties.readPropertiesSized
  * 3.10 UNSUBSCRIBE – Unsubscribe request
  * An UNSUBSCRIBE packet is sent by the Client to the Server, to unsubscribe from topics.
  */
-data class UnsubscribeRequest(val variable: VariableHeader, val topics: Set<CharSequence>) :
+data class UnsubscribeRequest(val variable: VariableHeader, override val topics: Set<CharSequence>) :
     ControlPacketV5(10, DirectionOfFlow.CLIENT_TO_SERVER, 0b10), IUnsubscribeRequest {
+
+    constructor(
+        packetIdentifier: Int,
+        topics: Set<CharSequence>,
+        userProperty: List<Pair<CharSequence, CharSequence>> = emptyList()
+    ) : this(VariableHeader(packetIdentifier, VariableHeader.Properties(userProperty)), topics)
+
+    init {
+        if (topics.isEmpty()) {
+            throw ProtocolError("An UNSUBSCRIBE packet with no Payload is a Protocol Error")
+        }
+    }
 
     override fun variableHeader(writeBuffer: WriteBuffer) = variable.serialize(writeBuffer)
     override fun remainingLength(): UInt {
@@ -34,13 +46,7 @@ data class UnsubscribeRequest(val variable: VariableHeader, val topics: Set<Char
 
     override fun payload(writeBuffer: WriteBuffer) = topics.forEach { writeBuffer.writeMqttUtf8String(it) }
 
-    constructor(packetIdentifier: Int, topics: Set<CharSequence>) : this(VariableHeader(packetIdentifier), topics)
-
-    init {
-        if (topics.isEmpty()) {
-            throw ProtocolError("An UNSUBSCRIBE packet with no Payload is a Protocol Error")
-        }
-    }
+    override val packetIdentifier = variable.packetIdentifier
 
     /**
      * 3.10.2 UNSUBSCRIBE Variable Header

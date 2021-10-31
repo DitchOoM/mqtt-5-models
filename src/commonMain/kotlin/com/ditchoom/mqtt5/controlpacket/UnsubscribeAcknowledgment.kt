@@ -8,6 +8,7 @@ import com.ditchoom.mqtt.MalformedPacketException
 import com.ditchoom.mqtt.ProtocolError
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.variableByteSize
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.writeVariableByteInteger
+import com.ditchoom.mqtt.controlpacket.IUnsubscribeAcknowledgment
 import com.ditchoom.mqtt.controlpacket.format.ReasonCode
 import com.ditchoom.mqtt.controlpacket.format.ReasonCode.*
 import com.ditchoom.mqtt.controlpacket.format.fixed.DirectionOfFlow
@@ -19,9 +20,17 @@ import com.ditchoom.mqtt5.controlpacket.properties.readPropertiesSized
 data class UnsubscribeAcknowledgment(
     val variable: VariableHeader,
     val reasonCodes: List<ReasonCode> = listOf(SUCCESS)
-) : ControlPacketV5(11, DirectionOfFlow.SERVER_TO_CLIENT) {
+) : ControlPacketV5(11, DirectionOfFlow.SERVER_TO_CLIENT), IUnsubscribeAcknowledgment {
+
+    init {
+        val invalidCodes = reasonCodes.map { it.byte } - validSubscribeCodes
+        if (invalidCodes.isEmpty()) {
+            throw ProtocolError("Invalid SUBACK reason code $invalidCodes")
+        }
+    }
 
     override fun variableHeader(writeBuffer: WriteBuffer) = variable.serialize(writeBuffer)
+    
     override fun remainingLength(): UInt {
         val variableSize = variable.size()
         val subSize = reasonCodes.size.toUInt()
@@ -30,12 +39,7 @@ data class UnsubscribeAcknowledgment(
 
     override fun payload(writeBuffer: WriteBuffer) = reasonCodes.forEach { writeBuffer.write(it.byte) }
 
-    init {
-        val invalidCodes = reasonCodes.map { it.byte } - validSubscribeCodes
-        if (invalidCodes.isEmpty()) {
-            throw ProtocolError("Invalid SUBACK reason code $invalidCodes")
-        }
-    }
+    override val packetIdentifier = variable.packetIdentifier
 
     /**
      * 3.11.2 UNSUBACK Variable Header

@@ -79,6 +79,12 @@ object ControlPacketV5Factory : ControlPacketFactory {
         return SubscribeRequest(variableHeader, subscriptions)
     }
 
+    override fun unsubscribe(
+        packetIdentifier: Int,
+        topics: Set<CharSequence>,
+        userProperty: List<Pair<CharSequence, CharSequence>>
+    ) = UnsubscribeRequest(packetIdentifier, topics, userProperty)
+
 
     override fun disconnect(
         reasonCode: ReasonCode,
