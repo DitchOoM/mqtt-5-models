@@ -11,12 +11,14 @@ import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.variableByteSize
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.writeMqttUtf8String
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.writeVariableByteInteger
 import com.ditchoom.mqtt.controlpacket.ISubscribeRequest
+import com.ditchoom.mqtt.controlpacket.ISubscription
+import com.ditchoom.mqtt.controlpacket.ISubscription.RetainHandling
+import com.ditchoom.mqtt.controlpacket.ISubscription.RetainHandling.*
 import com.ditchoom.mqtt.controlpacket.QualityOfService
 import com.ditchoom.mqtt.controlpacket.format.ReasonCode
 import com.ditchoom.mqtt.controlpacket.format.fixed.DirectionOfFlow
 import com.ditchoom.mqtt.controlpacket.utf8Length
 import com.ditchoom.mqtt.topic.Filter
-import com.ditchoom.mqtt5.controlpacket.RetainHandling.*
 import com.ditchoom.mqtt5.controlpacket.SubscribeRequest.VariableHeader.Properties
 import com.ditchoom.mqtt5.controlpacket.properties.Property
 import com.ditchoom.mqtt5.controlpacket.properties.ReasonString
@@ -34,7 +36,7 @@ import com.ditchoom.mqtt5.controlpacket.properties.readPropertiesSized
  * Bits 3,2,1 and 0 of the Fixed Header of the SUBSCRIBE packet are reserved and MUST be set to 0,0,1 and 0
  * respectively. The Server MUST treat any other value as malformed and close the Network Connection [MQTT-3.8.1-1].
  */
-data class SubscribeRequest(val variable: VariableHeader, val subscriptions: Set<Subscription>) :
+data class SubscribeRequest(val variable: VariableHeader, override val subscriptions: Set<ISubscription>) :
     ControlPacketV5(8, DirectionOfFlow.CLIENT_TO_SERVER, 0b10), ISubscribeRequest {
 
     constructor(
@@ -62,8 +64,7 @@ data class SubscribeRequest(val variable: VariableHeader, val subscriptions: Set
     override fun variableHeader(writeBuffer: WriteBuffer) = variable.serialize(writeBuffer)
 
     override fun expectedResponse() = SubscribeAcknowledgement(variable.packetIdentifier.toUShort(), ReasonCode.SUCCESS)
-    override fun getTopics() = subscriptions.map { it.topicFilter }
-    override fun payload(writeBuffer: WriteBuffer) = subscriptions.forEach { it.serialize(writeBuffer) }
+    override fun payload(writeBuffer: WriteBuffer) = subscriptions.forEach { (it as Subscription).serialize(writeBuffer) }
     override fun remainingLength(): UInt {
         val variableSize = variable.size()
         val subSize = subscriptions.size()
@@ -207,20 +208,20 @@ data class SubscribeRequest(val variable: VariableHeader, val subscriptions: Set
 }
 
 data class Subscription(
-    val topicFilter: Filter,
+    override val topicFilter: Filter,
     /**
      * Bits 0 and 1 of the Subscription Options represent Maximum QoS field. This gives the maximum
      * QoS level at which the Server can send Application Messages to the Client. It is a Protocol
      * Error if the Maximum QoS field has the value 3.
      */
-    val maximumQos: QualityOfService = QualityOfService.AT_LEAST_ONCE,
+    override val maximumQos: QualityOfService = QualityOfService.AT_LEAST_ONCE,
     /**
      * Bit 2 of the Subscription Options represents the No Local option. If the value is 1,
      * Application Messages MUST NOT be forwarded to a connection with a ClientID equal to the
      * ClientID of the publishing connection [MQTT-3.8.3-3]. It is a Protocol Error to set the No
      * Local bit to 1 on a Shared Subscription [MQTT-3.8.3-4].
      */
-    val noLocal: Boolean = false,
+    override val noLocal: Boolean = false,
     /**
      * Bit 3 of the Subscription Options represents the Retain As Published option. If 1,
      * Application Messages forwarded using this subscription keep the RETAIN flag they were
@@ -228,7 +229,7 @@ data class Subscription(
      * RETAIN flag set to 0. Retained messages sent when the subscription is established have
      * the RETAIN flag set to 1.
      */
-    val retainAsPublished: Boolean = false,
+    override val retainAsPublished: Boolean = false,
     /**
      * Bits 4 and 5 of the Subscription Options represent the Retain Handling option. This option
      * specifies whether retained messages are sent when the subscription is established. This
@@ -244,8 +245,8 @@ data class Subscription(
      *
      * It is a Protocol Error to send a Retain Handling value of 3.
      */
-    val retainHandling: RetainHandling = SEND_RETAINED_MESSAGES_AT_TIME_OF_SUBSCRIBE
-) {
+    override val retainHandling: RetainHandling = SEND_RETAINED_MESSAGES_AT_TIME_OF_SUBSCRIBE
+): ISubscription {
 
     fun serialize(writeBuffer: WriteBuffer) {
         writeBuffer.writeMqttUtf8String(topicFilter.topicFilter)
@@ -354,14 +355,8 @@ data class Subscription(
     }
 }
 
-fun Collection<Subscription>.size(): UInt {
+fun Collection<ISubscription>.size(): UInt {
     var size = 0u
-    forEach { size += it.size() }
+    forEach { size += (it as Subscription).size() }
     return size
-}
-
-enum class RetainHandling(val value: UByte) {
-    SEND_RETAINED_MESSAGES_AT_TIME_OF_SUBSCRIBE(0.toUByte()),
-    SEND_RETAINED_MESSAGES_AT_SUBSCRIBE_ONLY_IF_SUBSCRIBE_DOESNT_EXISTS(1.toUByte()),
-    DO_NOT_SEND_RETAINED_MESSAGES(2.toUByte())
 }
