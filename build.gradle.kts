@@ -46,8 +46,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("com.ditchoom:mqtt-base-models:1.0.15")
-                implementation("com.ditchoom:buffer:1.0.51")
+                implementation("com.ditchoom:mqtt-base-models:1.0.16")
+                implementation("com.ditchoom:buffer:1.0.53")
             }
         }
         val commonTest by getting {
