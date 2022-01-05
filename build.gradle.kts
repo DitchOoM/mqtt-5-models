@@ -1,5 +1,5 @@
 plugins {
-    kotlin("multiplatform") version "1.5.31"
+    kotlin("multiplatform") version "1.6.10"
     id("com.android.library")
     id("io.codearte.nexus-staging") version "0.30.0"
     `maven-publish`
@@ -46,8 +46,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("com.ditchoom:mqtt-base-models:1.0.16")
-                implementation("com.ditchoom:buffer:1.0.53")
+                implementation("com.ditchoom:mqtt-base-models:1.0.17")
+                implementation("com.ditchoom:buffer:1.0.54")
             }
         }
         val commonTest by getting {
