@@ -45,6 +45,8 @@ data class PublishMessage(
         retain: Boolean = false
     ) : this(FixedHeader(dup, qos, retain), VariableHeader(topic, packetIdentifier = packetIdentifier.toInt()))
 
+    override val packetIdentifier = variable.packetIdentifier
+    
     override val qualityOfService: QualityOfService = fixed.qos
     override fun variableHeader(writeBuffer: WriteBuffer) = variable.serialize(writeBuffer)
     override fun payload(writeBuffer: WriteBuffer) {
