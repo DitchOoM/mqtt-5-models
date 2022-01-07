@@ -11,8 +11,8 @@ import com.ditchoom.mqtt.ProtocolError
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.readMqttUtf8StringNotValidatedSized
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.readVariableByteInteger
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.writeMqttUtf8String
-import com.ditchoom.mqtt.controlpacket.QualityOfService
-import com.ditchoom.mqtt.controlpacket.QualityOfService.*
+import com.ditchoom.mqtt.controlpacket.QualityOfService.AT_LEAST_ONCE
+import com.ditchoom.mqtt.controlpacket.QualityOfService.AT_MOST_ONCE
 import com.ditchoom.mqtt.controlpacket.utf8Length
 
 @Suppress("UNUSED_PARAMETER")
@@ -132,9 +132,11 @@ fun ReadBuffer.readMqttProperty(): Pair<Property, Long> {
         0x29 -> SubscriptionIdentifierAvailable(readByte() == 1.toByte())
         0x2A -> SharedSubscriptionAvailable(readByte() == 1.toByte())
         else -> throw MalformedPacketException(
-            "Invalid Byte Code while reading properties $identifierByte 0x${identifierByte.toString(
-                16
-            )}"
+            "Invalid Byte Code while reading properties $identifierByte 0x${
+                identifierByte.toString(
+                    16
+                )
+            }"
         )
     }
     return Pair(property, property.size().toLong() + 1)

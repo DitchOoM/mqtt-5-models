@@ -30,7 +30,7 @@ data class UnsubscribeAcknowledgment(
     }
 
     override fun variableHeader(writeBuffer: WriteBuffer) = variable.serialize(writeBuffer)
-    
+
     override fun remainingLength(): UInt {
         val variableSize = variable.size()
         val subSize = reasonCodes.size.toUInt()

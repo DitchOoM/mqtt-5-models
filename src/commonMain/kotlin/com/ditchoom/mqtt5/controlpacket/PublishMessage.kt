@@ -1,4 +1,5 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "KDocUnresolvedReference", "EXPERIMENTAL_UNSIGNED_LITERALS", "DuplicatedCode",
+@file:Suppress(
+    "EXPERIMENTAL_API_USAGE", "KDocUnresolvedReference", "EXPERIMENTAL_UNSIGNED_LITERALS", "DuplicatedCode",
     "EXPERIMENTAL_OVERRIDE"
 )
 
@@ -46,7 +47,7 @@ data class PublishMessage(
     ) : this(FixedHeader(dup, qos, retain), VariableHeader(topic, packetIdentifier = packetIdentifier.toInt()))
 
     override val packetIdentifier = variable.packetIdentifier
-    
+
     override val qualityOfService: QualityOfService = fixed.qos
     override fun variableHeader(writeBuffer: WriteBuffer) = variable.serialize(writeBuffer)
     override fun payload(writeBuffer: WriteBuffer) {

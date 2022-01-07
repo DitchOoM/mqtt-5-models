@@ -2,16 +2,13 @@
 
 package com.ditchoom.mqtt5.controlpacket
 
-import com.ditchoom.buffer.PlatformBuffer
 import com.ditchoom.buffer.allocateNewBuffer
 import com.ditchoom.buffer.toBuffer
-import com.ditchoom.buffer.utf8Length
 import com.ditchoom.mqtt.MalformedPacketException
 import com.ditchoom.mqtt.ProtocolError
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.readMqttUtf8StringNotValidatedSized
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.readVariableByteInteger
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.writeVariableByteInteger
-import com.ditchoom.mqtt.controlpacket.format.ReasonCode
 import com.ditchoom.mqtt.controlpacket.format.ReasonCode.BANNED
 import com.ditchoom.mqtt.controlpacket.format.ReasonCode.SUCCESS
 import com.ditchoom.mqtt5.controlpacket.AuthenticationExchange.VariableHeader

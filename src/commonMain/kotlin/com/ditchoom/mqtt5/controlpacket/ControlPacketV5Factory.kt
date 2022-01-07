@@ -4,9 +4,9 @@ package com.ditchoom.mqtt5.controlpacket
 
 import com.ditchoom.buffer.PlatformBuffer
 import com.ditchoom.buffer.ReadBuffer
-import com.ditchoom.mqtt.topic.Filter
 import com.ditchoom.mqtt.controlpacket.*
 import com.ditchoom.mqtt.controlpacket.format.ReasonCode
+import com.ditchoom.mqtt.topic.Filter
 
 object ControlPacketV5Factory : ControlPacketFactory {
 
@@ -91,9 +91,10 @@ object ControlPacketV5Factory : ControlPacketFactory {
         sessionExpiryIntervalSeconds: Long?,
         reasonString: CharSequence?,
         userProperty: List<Pair<CharSequence, CharSequence>>
-    ) :IDisconnectNotification {
+    ): IDisconnectNotification {
         val props = DisconnectNotification.VariableHeader.Properties(
-            sessionExpiryIntervalSeconds, reasonString, userProperty)
+            sessionExpiryIntervalSeconds, reasonString, userProperty
+        )
         return DisconnectNotification(DisconnectNotification.VariableHeader(reasonCode, props))
     }
 }

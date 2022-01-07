@@ -64,7 +64,9 @@ data class SubscribeRequest(val variable: VariableHeader, override val subscript
     override fun variableHeader(writeBuffer: WriteBuffer) = variable.serialize(writeBuffer)
 
     override fun expectedResponse() = SubscribeAcknowledgement(variable.packetIdentifier.toUShort(), ReasonCode.SUCCESS)
-    override fun payload(writeBuffer: WriteBuffer) = subscriptions.forEach { (it as Subscription).serialize(writeBuffer) }
+    override fun payload(writeBuffer: WriteBuffer) =
+        subscriptions.forEach { (it as Subscription).serialize(writeBuffer) }
+
     override fun remainingLength(): UInt {
         val variableSize = variable.size()
         val subSize = subscriptions.size()
@@ -246,7 +248,7 @@ data class Subscription(
      * It is a Protocol Error to send a Retain Handling value of 3.
      */
     override val retainHandling: RetainHandling = SEND_RETAINED_MESSAGES_AT_TIME_OF_SUBSCRIBE
-): ISubscription {
+) : ISubscription {
 
     fun serialize(writeBuffer: WriteBuffer) {
         writeBuffer.writeMqttUtf8String(topicFilter.topicFilter)

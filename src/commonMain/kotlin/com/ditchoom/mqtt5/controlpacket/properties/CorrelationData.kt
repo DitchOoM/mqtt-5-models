@@ -7,7 +7,7 @@ import com.ditchoom.buffer.WriteBuffer
 
 data class CorrelationData(val data: PlatformBuffer) :
     Property(0x09, Type.BINARY_DATA, willProperties = true) {
-    override fun size() :UInt {
+    override fun size(): UInt {
         data.position(0)
         return 1u + UShort.SIZE_BYTES.toUInt() + data.remaining()
     }
