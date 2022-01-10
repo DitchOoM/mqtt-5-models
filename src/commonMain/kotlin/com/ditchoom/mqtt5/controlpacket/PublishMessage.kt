@@ -24,10 +24,11 @@ import com.ditchoom.mqtt5.controlpacket.properties.*
  * Creates an MQTT PUBLISH
  *
  */
+@Parcelize
 data class PublishMessage(
     val fixed: FixedHeader = FixedHeader(),
     val variable: VariableHeader,
-    val payload: PlatformBuffer? = null
+    val payload: ParcelablePlatformBuffer? = null
 ) :
     ControlPacketV5(IPublishMessage.controlPacketValue, DirectionOfFlow.BIDIRECTIONAL, fixed.flags), IPublishMessage {
     init {
@@ -76,6 +77,7 @@ data class PublishMessage(
         else -> null
     }
 
+    @Parcelize
     data class FixedHeader(
         /**
          * 3.3.1.1 DUP
@@ -185,7 +187,7 @@ data class PublishMessage(
          * subscriber will receive the most recent state.
          */
         val retain: Boolean = false
-    ) {
+    ) : Parcelable {
         val flags by lazy {
             val dupInt = if (dup) 0b1000 else 0b0
             val qosInt = qos.integerValue.toInt().shl(1)
@@ -220,11 +222,12 @@ data class PublishMessage(
      * The Variable Header of the PUBLISH Packet contains the following fields in the order: Topic Name, Packet
      * Identifier, and Properties. The rules for encoding Properties are described in section 2.2.2.
      */
+    @Parcelize
     data class VariableHeader(
         val topicName: CharSequence,
         val packetIdentifier: Int? = null,
         val properties: Properties = Properties()
-    ) {
+    ) : Parcelable {
 
         init {
             if (properties.topicAlias == 0) {
@@ -276,6 +279,7 @@ data class PublishMessage(
             return result
         }
 
+        @Parcelize
         data class Properties(
             /**
              * 3.3.2.3.2 Payload Format Indicator
@@ -417,7 +421,7 @@ data class PublishMessage(
              *
              * Refer to section 4.10 for more information about Request / Response
              */
-            val correlationData: PlatformBuffer? = null,
+            val correlationData: ParcelablePlatformBuffer? = null,
             /**
              * 3.3.2.3.7 User Property
              *
@@ -477,7 +481,7 @@ data class PublishMessage(
              * Identifier set to 10, and having no properties.
              */
             val contentType: CharSequence? = null
-        ) {
+        ) : Parcelable {
 
             init {
                 if (topicAlias == 0) {
@@ -541,7 +545,7 @@ data class PublishMessage(
                     var messageExpiryInterval: Long? = null
                     var topicAlias: Int? = null
                     var responseTopic: CharSequence? = null
-                    var correlationData: PlatformBuffer? = null
+                    var correlationData: ParcelablePlatformBuffer? = null
                     val userProperty = mutableListOf<Pair<CharSequence, CharSequence>>()
                     val subscriptionIdentifier = LinkedHashSet<Long>()
                     var contentType: CharSequence? = null

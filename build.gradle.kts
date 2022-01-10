@@ -4,6 +4,7 @@ plugins {
     id("io.codearte.nexus-staging") version "0.30.0"
     `maven-publish`
     signing
+    id("org.jetbrains.kotlin.plugin.parcelize") version "1.6.10"
 }
 
 val libraryVersionPrefix: String by project
@@ -46,8 +47,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api("com.ditchoom:mqtt-base-models:1.0.20")
-                implementation("com.ditchoom:buffer:1.0.54")
+                api("com.ditchoom:mqtt-base-models:1.0.26")
+                implementation("com.ditchoom:buffer:1.0.55")
             }
         }
         val commonTest by getting {

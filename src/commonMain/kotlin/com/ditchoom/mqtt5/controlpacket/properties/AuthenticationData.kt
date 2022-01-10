@@ -2,10 +2,10 @@
 
 package com.ditchoom.mqtt5.controlpacket.properties
 
-import com.ditchoom.buffer.PlatformBuffer
+import com.ditchoom.buffer.ParcelablePlatformBuffer
 import com.ditchoom.buffer.WriteBuffer
 
-data class AuthenticationData(val data: PlatformBuffer) : Property(0x16, Type.BINARY_DATA) {
+data class AuthenticationData(val data: ParcelablePlatformBuffer) : Property(0x16, Type.BINARY_DATA) {
     override fun size(): UInt {
         data.position(0)
         return 1u + UShort.SIZE_BYTES.toUInt() + data.remaining()

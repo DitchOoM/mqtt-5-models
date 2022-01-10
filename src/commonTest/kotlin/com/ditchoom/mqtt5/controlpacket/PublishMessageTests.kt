@@ -269,7 +269,7 @@ class PublishMessageTests {
     @Test
     fun correlationDataDuplicateThrowsProtocolError() {
         val obj1 = CorrelationData("yoyo".toBuffer())
-        val obj2 = obj1.copy()
+        val obj2 = CorrelationData("yoyo".toBuffer())
         val buffer = allocateNewBuffer(15u)
         buffer.writeVariableByteInteger(obj1.size() + obj2.size())
         obj1.write(buffer)

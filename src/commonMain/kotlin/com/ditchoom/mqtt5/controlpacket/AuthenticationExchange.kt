@@ -2,7 +2,8 @@
 
 package com.ditchoom.mqtt5.controlpacket
 
-import com.ditchoom.buffer.PlatformBuffer
+import com.ditchoom.buffer.Parcelable
+import com.ditchoom.buffer.ParcelablePlatformBuffer
 import com.ditchoom.buffer.ReadBuffer
 import com.ditchoom.buffer.WriteBuffer
 import com.ditchoom.mqtt.MalformedPacketException
@@ -23,6 +24,7 @@ import com.ditchoom.mqtt5.controlpacket.properties.*
  * Bits 3,2,1 and 0 of the Fixed Header of the AUTH packet are reserved and MUST all be set to 0. The Client or Server
  * MUST treat any other value as malformed and close the Network Connection [MQTT-3.15.1-1].
  */
+@Parcelize
 data class AuthenticationExchange(val variable: VariableHeader) :
     ControlPacketV5(15, DirectionOfFlow.BIDIRECTIONAL) {
 
@@ -38,6 +40,7 @@ data class AuthenticationExchange(val variable: VariableHeader) :
      * The Reason Code and Property Length can be omitted if the Reason Code is 0x00 (Success) and there are no
      * Properties. In this case the AUTH has a Remaining Length of 0.
      */
+    @Parcelize
     data class VariableHeader(
         /**
          * 3.15.2.1 Authenticate Reason Code
@@ -56,7 +59,7 @@ data class AuthenticationExchange(val variable: VariableHeader) :
          */
         val reasonCode: ReasonCode = SUCCESS,
         val properties: Properties
-    ) {
+    ) : Parcelable {
         init {
             // throw if reason code doesnt exist
             getReasonCode(reasonCode.byte)
@@ -72,11 +75,12 @@ data class AuthenticationExchange(val variable: VariableHeader) :
             properties.serialize(writeBuffer)
         }
 
+        @Parcelize
         data class Properties(
             val authentication: Authentication?,
             val reasonString: CharSequence? = null,
             val userProperty: List<Pair<CharSequence, CharSequence>> = emptyList()
-        ) {
+        ) : Parcelable {
 
             fun size(): UInt {
                 val authMethod = if (authentication != null) AuthenticationMethod(authentication.method) else null
@@ -112,7 +116,7 @@ data class AuthenticationExchange(val variable: VariableHeader) :
                     var method: CharSequence? = null
                     var reasonString: CharSequence? = null
                     val userProperty = mutableListOf<Pair<CharSequence, CharSequence>>()
-                    var data: PlatformBuffer? = null
+                    var data: ParcelablePlatformBuffer? = null
                     keyValuePairs?.forEach {
                         when (it) {
                             is AuthenticationMethod -> {

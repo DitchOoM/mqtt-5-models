@@ -2,7 +2,7 @@
 
 package com.ditchoom.mqtt5.controlpacket.properties
 
-import com.ditchoom.buffer.PlatformBuffer
+import com.ditchoom.buffer.ParcelablePlatformBuffer
 import com.ditchoom.buffer.ReadBuffer
 import com.ditchoom.buffer.WriteBuffer
 import com.ditchoom.buffer.allocateNewBuffer
@@ -66,7 +66,7 @@ fun HashMap<Int, Any>.addProperty(property: Property?) {
     put(property.identifierByte.toInt(), property)
 }
 
-fun ReadBuffer.readPlatformBuffer(): PlatformBuffer {
+fun ReadBuffer.readPlatformBuffer(): ParcelablePlatformBuffer {
     val size = readUnsignedShort().toUInt()
     val buffer = allocateNewBuffer(size)
     buffer.write(readByteArray(size))

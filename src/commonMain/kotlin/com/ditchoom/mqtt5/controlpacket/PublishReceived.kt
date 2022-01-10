@@ -2,6 +2,7 @@
 
 package com.ditchoom.mqtt5.controlpacket
 
+import com.ditchoom.buffer.Parcelable
 import com.ditchoom.buffer.ReadBuffer
 import com.ditchoom.buffer.WriteBuffer
 import com.ditchoom.mqtt.MalformedPacketException
@@ -22,12 +23,15 @@ import com.ditchoom.mqtt5.controlpacket.properties.readProperties
  *
  * A PUBREC packet is the response to a PUBLISH packet with QoS 2. It is the second packet of the QoS 2 protocol exchange.
  */
+@Parcelize
 data class PublishReceived(val variable: VariableHeader) : ControlPacketV5(5, DirectionOfFlow.BIDIRECTIONAL),
     IPublishReceived {
     override fun expectedResponse() = PublishRelease(variable.packetIdentifier.toUShort())
     override val packetIdentifier: Int = variable.packetIdentifier
     override fun variableHeader(writeBuffer: WriteBuffer) = variable.serialize(writeBuffer)
     override fun remainingLength() = variable.size()
+
+    @Parcelize
     data class VariableHeader(
         val packetIdentifier: Int,
         /**
@@ -44,7 +48,7 @@ data class PublishReceived(val variable: VariableHeader) : ControlPacketV5(5, Di
          * 3.4.2.2 PUBACK Properties
          */
         val properties: Properties = Properties()
-    ) {
+    ) : Parcelable {
         init {
             when (reasonCode.byte.toInt()) {
                 0, 0x10, 0x80, 0x83, 0x87, 0x90, 0x91, 0x97, 0x99 -> {
@@ -79,6 +83,7 @@ data class PublishReceived(val variable: VariableHeader) : ControlPacketV5(5, Di
             }
         }
 
+        @Parcelize
         data class Properties(
             /**
              * 3.5.2.2.2 Reason String
@@ -106,7 +111,7 @@ data class PublishReceived(val variable: VariableHeader) : ControlPacketV5(5, Di
              * allowed to appear more than once.
              */
             val userProperty: List<Pair<CharSequence, CharSequence>> = emptyList()
-        ) {
+        ) : Parcelable {
             val props by lazy {
                 val props = ArrayList<Property>(1 + userProperty.size)
                 if (reasonString != null) {

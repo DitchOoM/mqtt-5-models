@@ -1,7 +1,10 @@
 package com.ditchoom.mqtt5.controlpacket.properties
 
-import com.ditchoom.buffer.PlatformBuffer
+import com.ditchoom.buffer.Parcelable
+import com.ditchoom.buffer.ParcelablePlatformBuffer
+import com.ditchoom.mqtt5.controlpacket.Parcelize
 
+@Parcelize
 data class Authentication(
     /**
      * 3.1.2.11.9 Authentication Method
@@ -35,8 +38,8 @@ data class Authentication(
      * The contents of this data are defined by the authentication method. Refer to section 4.12 for
      * more information about extended authentication.
      */
-    val data: PlatformBuffer
-) {
+    val data: ParcelablePlatformBuffer
+) : Parcelable {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

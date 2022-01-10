@@ -2,7 +2,8 @@
 
 package com.ditchoom.mqtt5.controlpacket
 
-import com.ditchoom.buffer.PlatformBuffer
+import com.ditchoom.buffer.Parcelable
+import com.ditchoom.buffer.ParcelablePlatformBuffer
 import com.ditchoom.buffer.ReadBuffer
 import com.ditchoom.buffer.WriteBuffer
 import com.ditchoom.mqtt.MalformedPacketException
@@ -25,6 +26,7 @@ import com.ditchoom.mqtt5.controlpacket.properties.*
  * SHOULD close the Network Connection. A "reasonable" amount of time depends on the type of application and the
  * communications infrastructure.
  */
+@Parcelize
 data class ConnectionAcknowledgment(val header: VariableHeader = VariableHeader()) :
     ControlPacketV5(2, DirectionOfFlow.SERVER_TO_CLIENT), IConnectionAcknowledgment {
     override val isSuccessful: Boolean = header.connectReason == SUCCESS
@@ -41,6 +43,7 @@ data class ConnectionAcknowledgment(val header: VariableHeader = VariableHeader(
      * @see <a href="https://docs.oasis-open.org/mqtt/mqtt/v5.0/cos02/mqtt-v5.0-cos02.html#_Properties">
      *     Section 2.2.2</a>
      */
+    @Parcelize
     data class VariableHeader(
         /**
          * 3.2.2.1.1 Session Present
@@ -96,7 +99,8 @@ data class ConnectionAcknowledgment(val header: VariableHeader = VariableHeader(
          */
         val connectReason: ReasonCode = SUCCESS,
         val properties: Properties = Properties()
-    ) {
+    ) : Parcelable {
+        @Parcelize
         data class Properties(
             /**
              * 3.2.2.3.2 Session Expiry Interval
@@ -374,7 +378,7 @@ data class ConnectionAcknowledgment(val header: VariableHeader = VariableHeader(
              */
             val serverReference: CharSequence? = null,
             val authentication: Authentication? = null
-        ) {
+        ) : Parcelable {
             val props by lazy {
                 val props = ArrayList<Property>(16 + userProperty.size)
                 if (sessionExpiryIntervalSeconds != null) {
@@ -464,7 +468,7 @@ data class ConnectionAcknowledgment(val header: VariableHeader = VariableHeader(
                     var responseInformation: CharSequence? = null
                     var serverReference: CharSequence? = null
                     var authenticationMethod: CharSequence? = null
-                    var authenticationData: PlatformBuffer? = null
+                    var authenticationData: ParcelablePlatformBuffer? = null
                     keyValuePairs?.forEach {
                         when (it) {
                             is SessionExpiryInterval -> {

@@ -2,6 +2,7 @@
 
 package com.ditchoom.mqtt5.controlpacket
 
+import com.ditchoom.buffer.Parcelable
 import com.ditchoom.buffer.ReadBuffer
 import com.ditchoom.buffer.WriteBuffer
 import com.ditchoom.mqtt.MalformedPacketException
@@ -23,6 +24,7 @@ import com.ditchoom.mqtt5.controlpacket.properties.readProperties
  *
  * A PUBREL packet is the response to a PUBREC packet. It is the third packet of the QoS 2 protocol exchange.
  */
+@Parcelize
 data class PublishRelease(val variable: VariableHeader) : ControlPacketV5(6, DirectionOfFlow.BIDIRECTIONAL, 0b10),
     IPublishRelease {
     constructor(packetIdentifier: UShort) : this(VariableHeader(packetIdentifier.toInt()))
@@ -39,6 +41,7 @@ data class PublishRelease(val variable: VariableHeader) : ControlPacketV5(6, Dir
      * the PUBREC packet that is being acknowledged, PUBREL Reason Code, and Properties. The rules for encoding
      * Properties are described in section 2.2.2.
      */
+    @Parcelize
     data class VariableHeader(
         val packetIdentifier: Int,
         /**
@@ -56,7 +59,7 @@ data class PublishRelease(val variable: VariableHeader) : ControlPacketV5(6, Dir
          * 3.4.2.2 PUBREL Properties
          */
         val properties: Properties = Properties()
-    ) {
+    ) : Parcelable {
         init {
             when (reasonCode.byte.toInt()) {
                 0, 0x92 -> {
@@ -91,6 +94,7 @@ data class PublishRelease(val variable: VariableHeader) : ControlPacketV5(6, Dir
             }
         }
 
+        @Parcelize
         data class Properties(
             /**
              * 3.6.2.2.2 Reason String
@@ -118,7 +122,7 @@ data class PublishRelease(val variable: VariableHeader) : ControlPacketV5(6, Dir
              * is allowed to appear more than once.
              */
             val userProperty: List<Pair<CharSequence, CharSequence>> = emptyList()
-        ) {
+        ) : Parcelable {
             val props by lazy {
                 val props = ArrayList<Property>(1 + userProperty.size)
                 if (reasonString != null) {

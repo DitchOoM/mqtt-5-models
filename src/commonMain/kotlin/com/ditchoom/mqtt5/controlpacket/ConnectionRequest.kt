@@ -40,6 +40,7 @@ import com.ditchoom.mqtt5.controlpacket.properties.*
  * @see <a href="https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html#S4_13_Errors>
  *     Section 4.13 - Handling Errors</a>
  */
+@Parcelize
 data class ConnectionRequest(
     /**
      * Some types of MQTT Control Packet contain a Variable Header component. It resides between the Fixed Header
@@ -51,6 +52,7 @@ data class ConnectionRequest(
     val variableHeader: VariableHeader = VariableHeader(),
     val payload: Payload = Payload()
 ) : ControlPacketV5(1, DirectionOfFlow.CLIENT_TO_SERVER), IConnectionRequest {
+
     override val clientIdentifier = payload.clientId
     override val keepAliveTimeoutSeconds: UShort = variableHeader.keepAliveSeconds.toUShort()
     override fun variableHeader(writeBuffer: WriteBuffer) = variableHeader.serialize(writeBuffer)
@@ -98,6 +100,8 @@ data class ConnectionRequest(
     }
 
     override fun remainingLength() = variableHeader.size() + payload.size()
+
+    @Parcelize
     data class VariableHeader(
         /**
          * 3.1.2.1 Protocol Name
@@ -301,7 +305,7 @@ data class ConnectionRequest(
          *     3.1.2.11 CONNECT Properties</a>
          */
         val properties: Properties = Properties()
-    ) {
+    ) : Parcelable {
         fun validateOrGetWarning(): MqttWarning? {
             if (!willFlag && willRetain) {
                 return MqttWarning(
@@ -312,6 +316,7 @@ data class ConnectionRequest(
             return null
         }
 
+        @Parcelize
         data class Properties(
             /**
              * 3.1.2.11.2 Session Expiry Interval
@@ -550,7 +555,7 @@ data class ConnectionRequest(
              * @see Authentication.data
              */
             val authentication: Authentication? = null
-        ) {
+        ) : Parcelable {
 
             init {
                 if (maximumPacketSize == 0L) {
@@ -614,7 +619,7 @@ data class ConnectionRequest(
                     var requestProblemInformation: Boolean? = null
                     val userProperty = mutableListOf<Pair<CharSequence, CharSequence>>()
                     var authenticationMethod: CharSequence? = null
-                    var authenticationData: PlatformBuffer? = null
+                    var authenticationData: ParcelablePlatformBuffer? = null
                     keyValuePairs?.forEach {
                         when (it) {
                             is SessionExpiryInterval -> {
@@ -794,6 +799,7 @@ data class ConnectionRequest(
      * @see <a href="https://docs.oasis-open.org/mqtt/mqtt/v5.0/cos02/mqtt-v5.0-cos02.html#_Toc1477358">
      *     3.1.3 CONNECT Payload</a>
      */
+    @Parcelize
     data class Payload(
         /**
          * 3.1.3.1 Client Identifier (ClientID)
@@ -865,7 +871,7 @@ data class ConnectionRequest(
          * @see <a href="https://docs.oasis-open.org/mqtt/mqtt/v5.0/cos02/mqtt-v5.0-cos02.html#_Toc1477359">
          *     3.1.3.4 Will Payload</a>
          */
-        val willPayload: PlatformBuffer? = null,
+        val willPayload: ParcelablePlatformBuffer? = null,
         /**
          * 3.1.3.5 User Name
          *
@@ -885,7 +891,8 @@ data class ConnectionRequest(
          *     3.1.3.6 Password</a>
          */
         val password: CharSequence? = null
-    ) {
+    ) : Parcelable {
+        @Parcelize
         data class WillProperties(
             /**
              * 3.1.3.2.2 Will Delay Interval
@@ -997,7 +1004,7 @@ data class ConnectionRequest(
              * @see <a href="https://docs.oasis-open.org/mqtt/mqtt/v5.0/cos02/mqtt-v5.0-cos02.html#_Request_/_Response">
              *     Section 4.10 Request Response</a>
              */
-            val correlationData: PlatformBuffer? = null,
+            val correlationData: ParcelablePlatformBuffer? = null,
             /**
              * 3.1.3.2.8 User Property
              *
@@ -1019,7 +1026,7 @@ data class ConnectionRequest(
              *     3.1.3.2.8 User Property</a>
              */
             val userProperty: List<Pair<CharSequence, CharSequence>> = emptyList()
-        ) {
+        ) : Parcelable {
             val props by lazy {
                 val properties = ArrayList<Property>(6 + userProperty.count())
                 if (willDelayIntervalSeconds != 0L) {
@@ -1069,7 +1076,7 @@ data class ConnectionRequest(
                     var messageExpiryIntervalSeconds: Long? = null
                     var contentType: CharSequence? = null
                     var responseTopic: CharSequence? = null
-                    var correlationData: PlatformBuffer? = null
+                    var correlationData: ParcelablePlatformBuffer? = null
                     val userProperty = mutableListOf<Pair<CharSequence, CharSequence>>()
                     val properties = buffer.readProperties() ?: return WillProperties()
                     properties.forEach {

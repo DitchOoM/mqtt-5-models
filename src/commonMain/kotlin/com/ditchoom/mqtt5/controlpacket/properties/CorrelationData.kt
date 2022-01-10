@@ -2,10 +2,10 @@
 
 package com.ditchoom.mqtt5.controlpacket.properties
 
-import com.ditchoom.buffer.PlatformBuffer
+import com.ditchoom.buffer.ParcelablePlatformBuffer
 import com.ditchoom.buffer.WriteBuffer
 
-data class CorrelationData(val data: PlatformBuffer) :
+data class CorrelationData(val data: ParcelablePlatformBuffer) :
     Property(0x09, Type.BINARY_DATA, willProperties = true) {
     override fun size(): UInt {
         data.position(0)

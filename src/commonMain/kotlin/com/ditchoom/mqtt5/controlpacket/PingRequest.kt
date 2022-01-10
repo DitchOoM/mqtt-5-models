@@ -16,4 +16,5 @@ import com.ditchoom.mqtt.controlpacket.format.fixed.DirectionOfFlow
  *
  * This packet is used in Keep Alive processing. Refer to section 3.1.2.10 for more details.
  */
+@Parcelize
 object PingRequest : ControlPacketV5(12, DirectionOfFlow.CLIENT_TO_SERVER), IPingRequest

@@ -2,6 +2,7 @@
 
 package com.ditchoom.mqtt5.controlpacket
 
+import com.ditchoom.buffer.Parcelable
 import com.ditchoom.buffer.ReadBuffer
 import com.ditchoom.buffer.WriteBuffer
 import com.ditchoom.mqtt.MalformedPacketException
@@ -36,6 +37,7 @@ import com.ditchoom.mqtt5.controlpacket.properties.readPropertiesSized
  * Bits 3,2,1 and 0 of the Fixed Header of the SUBSCRIBE packet are reserved and MUST be set to 0,0,1 and 0
  * respectively. The Server MUST treat any other value as malformed and close the Network Connection [MQTT-3.8.1-1].
  */
+@Parcelize
 data class SubscribeRequest(val variable: VariableHeader, override val subscriptions: Set<ISubscription>) :
     ControlPacketV5(8, DirectionOfFlow.CLIENT_TO_SERVER, 0b10), ISubscribeRequest {
 
@@ -84,10 +86,11 @@ data class SubscribeRequest(val variable: VariableHeader, override val subscript
      *
      * Figure 3-19 shows an example of a SUBSCRIBE variable header with a Packet Identifier of 10 and no properties.
      */
+    @Parcelize
     data class VariableHeader(
         val packetIdentifier: Int,
         val properties: Properties = Properties()
-    ) {
+    ) : Parcelable {
         fun size() =
             UShort.SIZE_BYTES.toUInt() + variableByteSize(properties.size()) + properties.size()
 
@@ -96,6 +99,7 @@ data class SubscribeRequest(val variable: VariableHeader, override val subscript
             properties.serialize(writeBuffer)
         }
 
+        @Parcelize
         data class Properties(
             /**
              * 3.2.2.3.9 Reason String
@@ -133,7 +137,7 @@ data class SubscribeRequest(val variable: VariableHeader, override val subscript
              * the Client to the Server. The meaning of these properties is not defined by this specification.
              */
             val userProperty: List<Pair<CharSequence, CharSequence>> = emptyList()
-        ) {
+        ) : Parcelable {
             val props by lazy {
                 val props = ArrayList<Property>(1 + userProperty.size)
                 if (reasonString != null) {
@@ -209,6 +213,7 @@ data class SubscribeRequest(val variable: VariableHeader, override val subscript
     }
 }
 
+@Parcelize
 data class Subscription(
     override val topicFilter: Filter,
     /**

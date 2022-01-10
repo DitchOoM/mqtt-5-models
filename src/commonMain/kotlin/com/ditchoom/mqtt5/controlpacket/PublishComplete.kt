@@ -2,6 +2,7 @@
 
 package com.ditchoom.mqtt5.controlpacket
 
+import com.ditchoom.buffer.Parcelable
 import com.ditchoom.buffer.ReadBuffer
 import com.ditchoom.buffer.WriteBuffer
 import com.ditchoom.mqtt.MalformedPacketException
@@ -23,6 +24,7 @@ import com.ditchoom.mqtt5.controlpacket.properties.readProperties
  *
  * The PUBCOMP packet is the response to a PUBREL packet. It is the fourth and final packet of the QoS 2 protocol exchange.
  */
+@Parcelize
 data class PublishComplete(val variable: VariableHeader) :
     ControlPacketV5(7, DirectionOfFlow.BIDIRECTIONAL), IPublishComplete {
     constructor(packetIdentifier: UShort, reasonCode: ReasonCode = SUCCESS)
@@ -39,6 +41,7 @@ data class PublishComplete(val variable: VariableHeader) :
      * the PUBREL packet that is being acknowledged, PUBCOMP Reason Code, and Properties. The rules for encoding
      * Properties are described in section 2.2.2.
      */
+    @Parcelize
     data class VariableHeader(
         val packetIdentifier: Int,
         /**
@@ -57,7 +60,7 @@ data class PublishComplete(val variable: VariableHeader) :
          * 3.4.2.2 PUBACK Properties
          */
         val properties: Properties = Properties()
-    ) {
+    ) : Parcelable {
         init {
             when (reasonCode.byte.toInt()) {
                 0, 0x92 -> {
@@ -92,6 +95,7 @@ data class PublishComplete(val variable: VariableHeader) :
             }
         }
 
+        @Parcelize
         data class Properties(
             /**
              * 3.7.2.2.2 Reason String
@@ -120,7 +124,7 @@ data class PublishComplete(val variable: VariableHeader) :
              * allowed to appear more than once.
              */
             val userProperty: List<Pair<CharSequence, CharSequence>> = emptyList()
-        ) {
+        ) : Parcelable {
             val props by lazy {
                 val list = ArrayList<Property>(1 + userProperty.count())
                 if (reasonString != null) {

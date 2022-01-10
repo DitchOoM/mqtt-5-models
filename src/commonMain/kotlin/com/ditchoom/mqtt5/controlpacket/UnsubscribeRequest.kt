@@ -2,6 +2,7 @@
 
 package com.ditchoom.mqtt5.controlpacket
 
+import com.ditchoom.buffer.Parcelable
 import com.ditchoom.buffer.ReadBuffer
 import com.ditchoom.buffer.WriteBuffer
 import com.ditchoom.mqtt.MalformedPacketException
@@ -21,6 +22,7 @@ import com.ditchoom.mqtt5.controlpacket.properties.readPropertiesSized
  * 3.10 UNSUBSCRIBE – Unsubscribe request
  * An UNSUBSCRIBE packet is sent by the Client to the Server, to unsubscribe from topics.
  */
+@Parcelize
 data class UnsubscribeRequest(val variable: VariableHeader, override val topics: Set<CharSequence>) :
     ControlPacketV5(10, DirectionOfFlow.CLIENT_TO_SERVER, 0b10), IUnsubscribeRequest {
 
@@ -55,10 +57,11 @@ data class UnsubscribeRequest(val variable: VariableHeader, override val topics:
      * and Properties. Section 2.2.1 provides more information about Packet Identifiers. The rules for encoding
      * Properties are described in section 2.2.2.
      */
+    @Parcelize
     data class VariableHeader(
         val packetIdentifier: Int,
         val properties: Properties = Properties()
-    ) {
+    ) : Parcelable {
         fun size() =
             UShort.SIZE_BYTES.toUInt() + variableByteSize(properties.size()) + properties.size()
 
@@ -70,6 +73,7 @@ data class UnsubscribeRequest(val variable: VariableHeader, override val topics:
         /**
          * 3.10.2.1 UNSUBSCRIBE Properties
          */
+        @Parcelize
         data class Properties(
             /**
              * 3.10.2.1.2 User Property
@@ -87,7 +91,7 @@ data class UnsubscribeRequest(val variable: VariableHeader, override val topics:
              * the Client to the Server. The meaning of these properties is not defined by this specification.
              */
             val userProperty: List<Pair<CharSequence, CharSequence>> = emptyList()
-        ) {
+        ) : Parcelable {
             val props by lazy {
                 val props = ArrayList<Property>(userProperty.size)
                 if (userProperty.isNotEmpty()) {

@@ -2,6 +2,7 @@
 
 package com.ditchoom.mqtt5.controlpacket
 
+import com.ditchoom.buffer.Parcelable
 import com.ditchoom.buffer.ReadBuffer
 import com.ditchoom.buffer.WriteBuffer
 import com.ditchoom.mqtt.MalformedPacketException
@@ -17,6 +18,7 @@ import com.ditchoom.mqtt5.controlpacket.properties.ReasonString
 import com.ditchoom.mqtt5.controlpacket.properties.UserProperty
 import com.ditchoom.mqtt5.controlpacket.properties.readPropertiesSized
 
+@Parcelize
 data class UnsubscribeAcknowledgment(
     val variable: VariableHeader,
     val reasonCodes: List<ReasonCode> = listOf(SUCCESS)
@@ -48,10 +50,11 @@ data class UnsubscribeAcknowledgment(
      * UNSUBSCRIBE Packet that is being acknowledged, and Properties. The rules for encoding Properties are described
      * in section 2.2.2.
      */
+    @Parcelize
     data class VariableHeader(
         val packetIdentifier: Int,
         val properties: Properties = Properties()
-    ) {
+    ) : Parcelable {
         fun size() =
             UShort.SIZE_BYTES.toUInt() + variableByteSize(properties.size()) + properties.size()
 
@@ -63,6 +66,7 @@ data class UnsubscribeAcknowledgment(
         /**
          * 3.9.2.1 SUBACK Properties
          */
+        @Parcelize
         data class Properties(
             /**
              * 3.11.2.1.2 Reason String
@@ -91,7 +95,7 @@ data class UnsubscribeAcknowledgment(
              * name is allowed to appear more than once.
              */
             val userProperty: List<Pair<CharSequence, CharSequence>> = emptyList()
-        ) {
+        ) : Parcelable {
             val props by lazy {
                 val props = ArrayList<Property>(1 + userProperty.size)
                 if (reasonString != null) {

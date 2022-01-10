@@ -2,6 +2,7 @@
 
 package com.ditchoom.mqtt5.controlpacket
 
+import com.ditchoom.buffer.Parcelable
 import com.ditchoom.buffer.ReadBuffer
 import com.ditchoom.buffer.WriteBuffer
 import com.ditchoom.mqtt.MalformedPacketException
@@ -24,14 +25,17 @@ import com.ditchoom.mqtt5.controlpacket.properties.*
  * A Server MUST NOT send a DISCONNECT until after it has sent a CONNACK with Reason Code of less than 0x80
  * [MQTT-3.14.0-1].
  */
+@Parcelize
 data class DisconnectNotification(val variable: VariableHeader = VariableHeader()) :
     ControlPacketV5(14, DirectionOfFlow.BIDIRECTIONAL), IDisconnectNotification {
 
     override fun variableHeader(writeBuffer: WriteBuffer) = variable.serialize(writeBuffer)
+
+    @Parcelize
     data class VariableHeader(
         val reasonCode: ReasonCode = ReasonCode.NORMAL_DISCONNECTION,
         val properties: Properties = Properties()
-    ) {
+    ) : Parcelable {
         init {
             // throw if the reason code is not valid for the disconnect notification
             getDisconnectCode(reasonCode.byte)
@@ -42,6 +46,7 @@ data class DisconnectNotification(val variable: VariableHeader = VariableHeader(
             properties.serialize(buffer)
         }
 
+        @Parcelize
         data class Properties(
             /**
              * 3.14.2.2.2 Session Expiry Interval
@@ -101,7 +106,7 @@ data class DisconnectNotification(val variable: VariableHeader = VariableHeader(
              * Refer to section 4.11 Server Redirection for information about how Server Reference is used.
              */
             val serverReference: CharSequence? = null
-        ) {
+        ) : Parcelable {
             val props by lazy {
                 val list = ArrayList<Property>(3 + userProperty.count())
                 if (sessionExpiryIntervalSeconds != null) {
