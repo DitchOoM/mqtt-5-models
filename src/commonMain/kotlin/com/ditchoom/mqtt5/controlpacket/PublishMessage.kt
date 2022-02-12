@@ -51,10 +51,10 @@ data class PublishMessage(
     override fun setDupFlagNewPubMessage(): IPublishMessage {
         return if (fixed.qos == AT_MOST_ONCE && fixed.dup) {
             copy(fixed = fixed.copy(dup = false), variable = variable, payload = payload)
-        } else if (fixed.dup) {
-            this
-        } else {
+        } else if (fixed.qos != AT_MOST_ONCE && !fixed.dup) {
             copy(fixed = fixed.copy(dup = true), variable = variable, payload = payload)
+        } else {
+            this
         }
     }
     override val qualityOfService: QualityOfService = fixed.qos
