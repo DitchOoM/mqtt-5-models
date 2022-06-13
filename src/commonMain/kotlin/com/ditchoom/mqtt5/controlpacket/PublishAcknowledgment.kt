@@ -28,7 +28,7 @@ data class PublishAcknowledgment(val variable: VariableHeader) : ControlPacketV5
 
     override fun variableHeader(writeBuffer: WriteBuffer) = variable.serialize(writeBuffer)
     override val packetIdentifier: Int = variable.packetIdentifier
-    override fun remainingLength() = variable.size().toInt()
+    override fun remainingLength() = variable.size()
 
     @Parcelize
     data class VariableHeader(
@@ -72,14 +72,14 @@ data class PublishAcknowledgment(val variable: VariableHeader) : ControlPacketV5
             }
         }
 
-        fun size(): UInt {
+        fun size(): Int {
             val canOmitReasonCodeAndProperties = (reasonCode == SUCCESS
                     && properties.userProperty.isEmpty()
                     && properties.reasonString == null)
-            var size = UShort.SIZE_BYTES.toUInt()
+            var size = UShort.SIZE_BYTES
             if (!canOmitReasonCodeAndProperties) {
                 val propsSize = properties.size()
-                size += UByte.SIZE_BYTES.toUInt() + variableByteSize(propsSize.toInt()).toUInt() + propsSize
+                size += UByte.SIZE_BYTES + variableByteSize(propsSize) + propsSize
             }
             return size
         }
@@ -129,14 +129,14 @@ data class PublishAcknowledgment(val variable: VariableHeader) : ControlPacketV5
                 list
             }
 
-            fun size(): UInt {
-                var size = 0u
+            fun size(): Int {
+                var size = 0
                 props.forEach { size += it.size() }
                 return size
             }
 
             fun serialize(buffer: WriteBuffer) {
-                buffer.writeVariableByteInteger(size().toInt())
+                buffer.writeVariableByteInteger(size())
                 props.forEach { it.write(buffer) }
             }
 
@@ -167,9 +167,9 @@ data class PublishAcknowledgment(val variable: VariableHeader) : ControlPacketV5
 
         companion object {
 
-            fun from(buffer: ReadBuffer, remainingLength: UInt): VariableHeader {
+            fun from(buffer: ReadBuffer, remainingLength: Int): VariableHeader {
                 val packetIdentifier = buffer.readUnsignedShort()
-                if (remainingLength == 2u) {
+                if (remainingLength == 2) {
                     return VariableHeader(packetIdentifier.toInt())
                 } else {
                     val reasonCodeByte = buffer.readUnsignedByte()
@@ -197,7 +197,7 @@ data class PublishAcknowledgment(val variable: VariableHeader) : ControlPacketV5
     }
 
     companion object {
-        fun from(buffer: ReadBuffer, remainingLength: UInt) =
+        fun from(buffer: ReadBuffer, remainingLength: Int) =
             PublishAcknowledgment(VariableHeader.from(buffer, remainingLength))
     }
 }

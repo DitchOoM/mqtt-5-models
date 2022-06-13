@@ -70,14 +70,14 @@ data class PublishComplete(val variable: VariableHeader) :
             }
         }
 
-        fun size(): UInt {
+        fun size(): Int {
             val canOmitReasonCodeAndProperties = (reasonCode == SUCCESS
                     && properties.userProperty.isEmpty()
                     && properties.reasonString == null)
-            var size = UShort.SIZE_BYTES.toUInt()
+            var size = UShort.SIZE_BYTES
             if (!canOmitReasonCodeAndProperties) {
                 val propsSize = properties.size()
-                size += UByte.SIZE_BYTES.toUInt() + variableByteSize(propsSize.toInt()).toUInt() + propsSize
+                size += UByte.SIZE_BYTES + variableByteSize(propsSize) + propsSize
             }
             return size
         }
@@ -139,14 +139,14 @@ data class PublishComplete(val variable: VariableHeader) :
             }
 
 
-            fun size(): UInt {
-                var size = 0u
+            fun size(): Int {
+                var size = 0
                 props.forEach { size += it.size() }
                 return size
             }
 
             fun serialize(buffer: WriteBuffer) {
-                buffer.writeVariableByteInteger(size().toInt())
+                buffer.writeVariableByteInteger(size())
                 props.forEach { it.write(buffer) }
             }
 
@@ -175,9 +175,9 @@ data class PublishComplete(val variable: VariableHeader) :
         }
 
         companion object {
-            fun from(buffer: ReadBuffer, remainingLength: UInt): VariableHeader {
+            fun from(buffer: ReadBuffer, remainingLength: Int): VariableHeader {
                 val packetIdentifier = buffer.readUnsignedShort()
-                return if (remainingLength == 2u) {
+                return if (remainingLength == 2) {
                     VariableHeader(packetIdentifier.toInt())
                 } else {
                     val reasonCodeByte = buffer.readUnsignedByte()
@@ -198,7 +198,7 @@ data class PublishComplete(val variable: VariableHeader) :
     }
 
     companion object {
-        fun from(buffer: ReadBuffer, remainingLength: UInt) =
+        fun from(buffer: ReadBuffer, remainingLength: Int) =
             PublishComplete(VariableHeader.from(buffer, remainingLength))
     }
 }

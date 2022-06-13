@@ -12,6 +12,7 @@ import com.ditchoom.mqtt5.controlpacket.properties.UserProperty
 import com.ditchoom.mqtt5.controlpacket.properties.readProperties
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.fail
 
 class PublishCompleteTests {
@@ -76,14 +77,13 @@ class PublishCompleteTests {
         val obj1 = ReasonString("yolo")
         val obj2 = obj1.copy()
         val buffer = PlatformBuffer.allocate(35)
-        buffer.writeVariableByteInteger((obj1.size() + obj2.size()).toInt())
+        buffer.writeVariableByteInteger(obj1.size() + obj2.size())
         obj1.write(buffer)
         obj2.write(buffer)
         buffer.resetForRead()
-        try {
+        assertFailsWith<ProtocolError> {
             DisconnectNotification.VariableHeader.Properties.from(buffer.readProperties())
             fail()
-        } catch (e: ProtocolError) {
         }
     }
 

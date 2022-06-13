@@ -33,8 +33,8 @@ data class UnsubscribeAcknowledgment(
 
     override fun remainingLength(): Int {
         val variableSize = variable.size()
-        val subSize = reasonCodes.size.toUInt()
-        return (variableSize + subSize).toInt()
+        val subSize = reasonCodes.size
+        return variableSize + subSize
     }
 
     override fun payload(writeBuffer: WriteBuffer) = reasonCodes.forEach { writeBuffer.write(it.byte) }
@@ -53,8 +53,7 @@ data class UnsubscribeAcknowledgment(
         val packetIdentifier: Int,
         val properties: Properties = Properties()
     ) : Parcelable {
-        fun size() =
-            UShort.SIZE_BYTES.toUInt() + variableByteSize(properties.size().toInt()).toUInt() + properties.size()
+        fun size() = UShort.SIZE_BYTES + variableByteSize(properties.size()) + properties.size()
 
         fun serialize(writeBuffer: WriteBuffer) {
             writeBuffer.write(packetIdentifier.toUShort())
@@ -109,14 +108,14 @@ data class UnsubscribeAcknowledgment(
                 props
             }
 
-            fun size(): UInt {
-                var size = 0u
+            fun size(): Int {
+                var size = 0
                 props.forEach { size += it.size() }
                 return size
             }
 
             fun serialize(buffer: WriteBuffer) {
-                buffer.writeVariableByteInteger(size().toInt())
+                buffer.writeVariableByteInteger(size())
                 props.forEach { it.write(buffer) }
             }
 
@@ -145,12 +144,12 @@ data class UnsubscribeAcknowledgment(
         }
 
         companion object {
-            fun from(buffer: ReadBuffer): Pair<UInt, VariableHeader> {
+            fun from(buffer: ReadBuffer): Pair<Int, VariableHeader> {
                 val packetIdentifier = buffer.readUnsignedShort()
                 val sized = buffer.readPropertiesSized()
                 val props = Properties.from(sized.second)
                 return Pair(
-                    UShort.SIZE_BYTES.toUInt() + variableByteSize(sized.first.toInt()).toUInt() + sized.first,
+                    UShort.SIZE_BYTES + variableByteSize(sized.first) + sized.first,
                     VariableHeader(packetIdentifier.toInt(), props)
                 )
             }
@@ -158,10 +157,10 @@ data class UnsubscribeAcknowledgment(
     }
 
     companion object {
-        fun from(buffer: ReadBuffer, remainingLength: UInt): UnsubscribeAcknowledgment {
+        fun from(buffer: ReadBuffer, remainingLength: Int): UnsubscribeAcknowledgment {
             val variableHeader = VariableHeader.from(buffer)
             val list = mutableListOf<ReasonCode>()
-            while (remainingLength - variableHeader.first > list.count().toUInt()) {
+            while (remainingLength - variableHeader.first > list.count()) {
                 val reasonCodeByte = buffer.readUnsignedByte()
                 list += when (reasonCodeByte) {
                     SUCCESS.byte -> SUCCESS

@@ -94,7 +94,7 @@ data class ConnectionRequest(
         return null
     }
 
-    override fun remainingLength() = (variableHeader.size() + payload.size()).toInt()
+    override fun remainingLength() = (variableHeader.size() + payload.size())
 
     @Parcelize
     data class VariableHeader(
@@ -593,14 +593,14 @@ data class ConnectionRequest(
                 list
             }
 
-            fun size(): UInt {
-                var size = 0.toUInt()
+            fun size(): Int {
+                var size = 0
                 props.forEach { size += it.size() }
                 return size
             }
 
             fun serialize(writeBuffer: WriteBuffer) {
-                writeBuffer.writeVariableByteInteger(size().toInt())
+                writeBuffer.writeVariableByteInteger(size())
                 props.forEach { it.write(writeBuffer) }
             }
 
@@ -746,11 +746,11 @@ data class ConnectionRequest(
             properties.serialize(writeBuffer)
         }
 
-        fun size(): UInt {
-            var size = UShort.SIZE_BYTES.toUInt() + protocolName.utf8Length().toUInt()
-            size += (2u * UByte.SIZE_BYTES.toUInt()) + UShort.SIZE_BYTES.toUInt()
+        fun size(): Int {
+            var size = UShort.SIZE_BYTES + protocolName.utf8Length()
+            size += (2 * UByte.SIZE_BYTES) + UShort.SIZE_BYTES
             val propsSize = properties.size()
-            size += propsSize + variableByteSize(propsSize.toInt()).toUInt()
+            size += propsSize + variableByteSize(propsSize)
             return size
         }
 
@@ -1052,14 +1052,14 @@ data class ConnectionRequest(
                 properties
             }
 
-            fun size(): UInt {
-                var size = 0.toUInt()
+            fun size(): Int {
+                var size = 0
                 props.forEach { size += it.size() }
                 return size
             }
 
             fun serialize(buffer: WriteBuffer) {
-                buffer.writeVariableByteInteger(size().toInt())
+                buffer.writeVariableByteInteger(size())
                 props.forEach { it.write(buffer) }
             }
 
@@ -1164,23 +1164,23 @@ data class ConnectionRequest(
             }
         }
 
-        fun size(): UInt {
-            var size = (UShort.SIZE_BYTES + clientId.utf8Length()).toUInt()
+        fun size(): Int {
+            var size = UShort.SIZE_BYTES + clientId.utf8Length()
             if (willTopic != null) {
-                size += (UShort.SIZE_BYTES + willTopic.utf8Length()).toUInt()
+                size += UShort.SIZE_BYTES + willTopic.utf8Length()
             }
             if (willProperties != null) {
                 val willPropertiesSize = willProperties.size()
-                size += variableByteSize(willPropertiesSize.toInt()).toUInt() + willPropertiesSize
+                size += variableByteSize(willPropertiesSize) + willPropertiesSize
             }
             if (willPayload != null) {
-                size += willPayload.remaining().toUInt()
+                size += willPayload.remaining()
             }
             if (userName != null) {
-                size += (UShort.SIZE_BYTES + userName.utf8Length()).toUInt()
+                size += (UShort.SIZE_BYTES + userName.utf8Length())
             }
             if (password != null) {
-                size += (UShort.SIZE_BYTES + password.utf8Length()).toUInt()
+                size += (UShort.SIZE_BYTES + password.utf8Length())
             }
             return size
         }

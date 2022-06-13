@@ -69,7 +69,7 @@ data class SubscribeRequest(val variable: VariableHeader, override val subscript
     override fun remainingLength(): Int {
         val variableSize = variable.size()
         val subSize = subscriptions.size()
-        return (variableSize + subSize).toInt()
+        return variableSize + subSize
     }
 
     /**
@@ -89,7 +89,7 @@ data class SubscribeRequest(val variable: VariableHeader, override val subscript
         val properties: Properties = Properties()
     ) : Parcelable {
         fun size() =
-            UShort.SIZE_BYTES.toUInt() + variableByteSize(properties.size().toInt()).toUInt() + properties.size()
+            UShort.SIZE_BYTES + variableByteSize(properties.size()) + properties.size()
 
         fun serialize(writeBuffer: WriteBuffer) {
             writeBuffer.write(packetIdentifier.toUShort())
@@ -150,14 +150,14 @@ data class SubscribeRequest(val variable: VariableHeader, override val subscript
                 props
             }
 
-            fun size(): UInt {
-                var size = 0u
+            fun size(): Int {
+                var size = 0
                 props.forEach { size += it.size() }
                 return size
             }
 
             fun serialize(buffer: WriteBuffer) {
-                buffer.writeVariableByteInteger(size().toInt())
+                buffer.writeVariableByteInteger(size())
                 props.forEach { it.write(buffer) }
             }
 
@@ -186,15 +186,15 @@ data class SubscribeRequest(val variable: VariableHeader, override val subscript
         }
 
         companion object {
-            fun from(buffer: ReadBuffer, remainingLength: UInt): Pair<UInt, VariableHeader> {
+            fun from(buffer: ReadBuffer, remainingLength: Int): Pair<Int, VariableHeader> {
                 val packetIdentifier = buffer.readUnsignedShort().toInt()
-                var size = 2u
-                return if (remainingLength == 2u) {
+                var size = 2
+                return if (remainingLength == 2) {
                     Pair(size, VariableHeader(packetIdentifier))
                 } else {
                     val propsData = buffer.readPropertiesSized()
                     val props = Properties.from(propsData.second)
-                    size += propsData.first + variableByteSize(propsData.first.toInt()).toUInt()
+                    size += propsData.first + variableByteSize(propsData.first)
                     Pair(size, VariableHeader(packetIdentifier, props))
                 }
             }
@@ -202,7 +202,7 @@ data class SubscribeRequest(val variable: VariableHeader, override val subscript
     }
 
     companion object {
-        fun from(buffer: ReadBuffer, remainingLength: UInt): SubscribeRequest {
+        fun from(buffer: ReadBuffer, remainingLength: Int): SubscribeRequest {
             val header = VariableHeader.from(buffer, remainingLength)
             val subscriptions = Subscription.fromMany(buffer, remainingLength - header.first)
             return SubscribeRequest(header.second, subscriptions)
@@ -262,13 +262,12 @@ data class Subscription(
         writeBuffer.write(combinedByte)
     }
 
-    fun size() =
-        (topicFilter.utf8Length() + UShort.SIZE_BYTES).toUInt() + Byte.SIZE_BYTES.toUInt()
+    fun size() = topicFilter.utf8Length() + UShort.SIZE_BYTES + Byte.SIZE_BYTES
 
     companion object {
-        fun fromMany(buffer: ReadBuffer, remainingLength: UInt): Set<Subscription> {
+        fun fromMany(buffer: ReadBuffer, remainingLength: Int): Set<Subscription> {
             val subscriptions = HashSet<Subscription>()
-            var bytesRead = 0u
+            var bytesRead = 0
             while (bytesRead < remainingLength) {
                 val result = from(buffer)
                 bytesRead += result.first
@@ -277,13 +276,13 @@ data class Subscription(
             return subscriptions
         }
 
-        fun from(buffer: ReadBuffer): Pair<UInt, Subscription> {
-            var size = 0.toUInt()
+        fun from(buffer: ReadBuffer): Pair<Int, Subscription> {
+            var size = 0
             val topic = buffer.readMqttUtf8StringNotValidatedSized()
-            size += topic.first.toUInt() + 2u
+            size += topic.first + 2
             val topicFilter = topic.second
             val subOptionsInt = buffer.readUnsignedByte().toInt()
-            size += 1u
+            size += 1
             val reservedBit7 = subOptionsInt.shr(7) == 1
             if (reservedBit7) {
                 throw ProtocolError("Bit 7 in Subscribe payload is set to an invalid value (it is reserved)")
@@ -359,8 +358,8 @@ data class Subscription(
     }
 }
 
-fun Collection<ISubscription>.size(): UInt {
-    var size = 0u
+fun Collection<ISubscription>.size(): Int {
+    var size = 0
     forEach { size += (it as Subscription).size() }
     return size
 }

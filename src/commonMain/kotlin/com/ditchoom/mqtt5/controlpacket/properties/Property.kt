@@ -15,41 +15,37 @@ import com.ditchoom.mqtt.controlpacket.utf8Length
 
 @Suppress("UNUSED_PARAMETER")
 abstract class Property(val identifierByte: Byte, val type: Type, val willProperties: Boolean = false) {
-    open fun write(buffer: WriteBuffer): UInt {
-        return 0u
-    }
+    open fun write(buffer: WriteBuffer): Int = 0
 
-    open fun size(): UInt {
-        return 0u
-    }
+    open fun size(): Int = 0
 
-    internal fun write(buffer: WriteBuffer, boolean: Boolean): UInt {
+    internal fun write(buffer: WriteBuffer, boolean: Boolean): Int {
         buffer.write(identifierByte)
         buffer.write((if (boolean) 1 else 0).toUByte())
-        return 2u
+        return 2
     }
 
-    fun size(number: UInt) = 5u
-    fun write(bytePacketBuilder: WriteBuffer, number: UInt): UInt {
+    fun size(number: UInt) = 5
+    fun write(bytePacketBuilder: WriteBuffer, number: UInt): Int {
         bytePacketBuilder.write(identifierByte)
         bytePacketBuilder.write(number)
-        return 5u
+        return 5
     }
 
     fun size(number: UShort) = 3u
-    fun write(bytePacketBuilder: WriteBuffer, number: UShort): UInt {
+    fun write(bytePacketBuilder: WriteBuffer, number: UShort): Int {
         bytePacketBuilder.write(identifierByte)
         bytePacketBuilder.write(number)
-        return 3u
+        return 3
     }
 
-    fun size(string: CharSequence) = UShort.SIZE_BYTES.toUInt() + 1u + string.utf8Length().toUInt()
+    fun size(string: CharSequence) = UShort.SIZE_BYTES + 1 + string.utf8Length()
 
-    fun write(bytePacketBuilder: WriteBuffer, string: CharSequence): UInt {
+    fun write(bytePacketBuilder: WriteBuffer, string: CharSequence): Int {
+        val startPosition = bytePacketBuilder.position()
         bytePacketBuilder.write(identifierByte)
-        val size = string.utf8Length().toUInt()
         bytePacketBuilder.writeMqttUtf8String(string)
-        return size
+        return bytePacketBuilder.position() - startPosition
     }
 }
 
@@ -72,7 +68,7 @@ fun ReadBuffer.readPlatformBuffer(): PlatformBuffer {
     return buffer
 }
 
-fun ReadBuffer.readMqttProperty(): Pair<Property, Long> {
+fun ReadBuffer.readMqttProperty(): Pair<Property, Int> {
     val identifierByte = readByte().toInt()
     val property = when (identifierByte) {
         0x01 -> {
@@ -137,19 +133,19 @@ fun ReadBuffer.readMqttProperty(): Pair<Property, Long> {
             }"
         )
     }
-    return Pair(property, property.size().toLong() + 1)
+    return Pair(property, property.size() + 1)
 }
 
 fun ReadBuffer.readProperties() = readPropertiesSized().second
 
-fun ReadBuffer.readPropertiesSized(): Pair<UInt, Collection<Property>?> {
+fun ReadBuffer.readPropertiesSized(): Pair<Int, Collection<Property>?> {
     val propertyLength = readVariableByteInteger()
     val list = mutableListOf<Property>()
-    var totalBytesRead = 0L
+    var totalBytesRead = 0
     while (totalBytesRead < propertyLength) {
         val (property, bytesRead) = readMqttProperty()
         totalBytesRead += bytesRead
         list += property
     }
-    return Pair(propertyLength.toUInt(), if (list.isEmpty()) null else list)
+    return Pair(propertyLength, if (list.isEmpty()) null else list)
 }

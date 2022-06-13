@@ -4,12 +4,12 @@ import com.ditchoom.buffer.PlatformBuffer
 import com.ditchoom.buffer.WriteBuffer
 
 data class AuthenticationData(val data: PlatformBuffer) : Property(0x16, Type.BINARY_DATA) {
-    override fun size(): UInt {
+    override fun size(): Int {
         data.position(0)
-        return 1u + UShort.SIZE_BYTES.toUInt() + data.remaining().toUInt()
+        return 1 + UShort.SIZE_BYTES + data.remaining()
     }
 
-    override fun write(buffer: WriteBuffer): UInt {
+    override fun write(buffer: WriteBuffer): Int {
         buffer.write(identifierByte)
         data.position(0)
         buffer.write(data.remaining().toUShort())

@@ -84,8 +84,8 @@ class ConnectionRequestTests {
     fun serializeAtMostOnce() {
         val connectionRequest = ConnectionRequest(VariableHeader(willQos = AT_MOST_ONCE))
         val buffer = PlatformBuffer.allocate(15)
-        assertEquals(11u, connectionRequest.variableHeader.size(), "variable header size")
-        assertEquals(2u, connectionRequest.payload.size(), "payload size")
+        assertEquals(11, connectionRequest.variableHeader.size(), "variable header size")
+        assertEquals(2, connectionRequest.payload.size(), "payload size")
         connectionRequest.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b00010000, buffer.readByte(), "invalid byte 1 on the CONNECT fixed header")

@@ -436,16 +436,16 @@ data class ConnectionAcknowledgment(val header: VariableHeader = VariableHeader(
             }
 
             fun serialize(writeBuffer: WriteBuffer) {
-                var size = 0u
+                var size = 0
                 props.forEach { size += it.size() }
-                writeBuffer.writeVariableByteInteger(size.toInt())
+                writeBuffer.writeVariableByteInteger(size)
                 props.forEach { it.write(writeBuffer) }
             }
 
-            fun size(): UInt {
-                var size = 0u
+            fun size(): Int {
+                var size = 0
                 props.forEach { size += it.size() }
-                return size + variableByteSize(size.toInt()).toUInt()
+                return size + variableByteSize(size)
             }
 
             companion object {
@@ -655,19 +655,19 @@ data class ConnectionAcknowledgment(val header: VariableHeader = VariableHeader(
             properties.serialize(writeBuffer)
         }
 
-        fun size() = 2u + properties.size()
+        fun size() = 2 + properties.size()
 
 
         companion object {
 
-            fun from(buffer: ReadBuffer, remainingLength: UInt): VariableHeader {
+            fun from(buffer: ReadBuffer, remainingLength: Int): VariableHeader {
                 val sessionPresent = buffer.readByte() == 1.toByte()
                 val connectionReasonByte = buffer.readUnsignedByte()
                 val connectionReason = connackConnectReason[connectionReasonByte]
                 if (connectionReason == null) {
                     throw MalformedPacketException("Invalid property type found in MQTT payload $connectionReason")
                 }
-                val propeties = if (remainingLength - 2u > 0u) {
+                val propeties = if (remainingLength - 2 > 0) {
                     val properties = buffer.readProperties()
                     Properties.from(properties)
                 } else {
@@ -679,7 +679,7 @@ data class ConnectionAcknowledgment(val header: VariableHeader = VariableHeader(
     }
 
     companion object {
-        fun from(buffer: ReadBuffer, remainingLength: UInt) =
+        fun from(buffer: ReadBuffer, remainingLength: Int) =
             ConnectionAcknowledgment(VariableHeader.from(buffer, remainingLength))
     }
 }

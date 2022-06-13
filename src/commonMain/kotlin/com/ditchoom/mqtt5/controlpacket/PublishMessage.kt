@@ -64,9 +64,9 @@ data class PublishMessage(
     override fun remainingLength(): Int {
         var size = variable.size()
         if (payload != null) {
-            size += payload.remaining().toUInt()
+            size += payload.remaining()
         }
-        return size.toInt()
+        return size
     }
 
     override val topic = variable.topicName
@@ -266,13 +266,13 @@ data class PublishMessage(
             properties.serialize(buffer)
         }
 
-        fun size(): UInt {
-            var size = (UShort.SIZE_BYTES + topicName.utf8Length()).toUInt()
+        fun size(): Int {
+            var size = UShort.SIZE_BYTES + topicName.utf8Length()
             if (packetIdentifier != null) {
-                size += UShort.SIZE_BYTES.toUInt()
+                size += UShort.SIZE_BYTES
             }
             val propsSize = properties.size()
-            size += variableByteSize(propsSize.toInt()).toUInt() + propsSize
+            size += variableByteSize(propsSize) + propsSize
             return size
         }
 
@@ -531,15 +531,15 @@ data class PublishMessage(
                 list
             }
 
-            fun size(): UInt {
-                var size = 0u
+            fun size(): Int {
+                var size = 0
                 props.forEach { size += it.size() }
                 return size
             }
 
             fun serialize(buffer: WriteBuffer) {
                 val size = size()
-                buffer.writeVariableByteInteger(size.toInt())
+                buffer.writeVariableByteInteger(size)
                 props.forEach { it.write(buffer) }
             }
 
@@ -633,18 +633,18 @@ data class PublishMessage(
 
         companion object {
 
-            fun from(buffer: ReadBuffer, isQos0: Boolean): Pair<UInt, VariableHeader> {
+            fun from(buffer: ReadBuffer, isQos0: Boolean): Pair<Int, VariableHeader> {
                 val result = buffer.readMqttUtf8StringNotValidatedSized()
-                var size = result.first.toUInt() + UShort.SIZE_BYTES.toUInt()
+                var size = result.first + UShort.SIZE_BYTES
                 val topicName = result.second
                 val packetIdentifier = if (isQos0) {
                     null
                 } else {
-                    size += 2u
+                    size += 2
                     buffer.readUnsignedShort().toInt()
                 }
                 val propertiesSized = buffer.readPropertiesSized()
-                size += 1u
+                size += 1
                 size += propertiesSized.first
                 val props = Properties.from(propertiesSized.second)
                 return Pair(size, VariableHeader(topicName, packetIdentifier, props))
@@ -653,12 +653,12 @@ data class PublishMessage(
     }
 
     companion object {
-        fun from(buffer: ReadBuffer, byte1: UByte, remainingLength: UInt): PublishMessage {
+        fun from(buffer: ReadBuffer, byte1: UByte, remainingLength: Int): PublishMessage {
             val fixedHeader = FixedHeader.fromByte(byte1)
             val variableHeaderSized = VariableHeader.from(buffer, fixedHeader.qos == AT_MOST_ONCE)
             val variableHeader = variableHeaderSized.second
             val variableSize = variableHeaderSized.first
-            val size = (remainingLength - variableSize).toInt()
+            val size = remainingLength - variableSize
             val payloadBuffer = if (size > 0) {
                 val payloadBuffer = PlatformBuffer.allocate(size)
                 payloadBuffer.write(buffer.readByteArray(size))

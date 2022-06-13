@@ -69,14 +69,14 @@ data class PublishRelease(val variable: VariableHeader) : ControlPacketV5(6, Dir
             }
         }
 
-        fun size(): UInt {
+        fun size(): Int {
             val canOmitReasonCodeAndProperties = (reasonCode == SUCCESS
                     && properties.userProperty.isEmpty()
                     && properties.reasonString == null)
-            var size = UShort.SIZE_BYTES.toUInt()
+            var size = UShort.SIZE_BYTES
             if (!canOmitReasonCodeAndProperties) {
                 val propsSize = properties.size()
-                size += UByte.SIZE_BYTES.toUInt() + variableByteSize(propsSize.toInt()).toUInt() + propsSize
+                size += UByte.SIZE_BYTES + variableByteSize(propsSize) + propsSize
             }
             return size
         }
@@ -136,14 +136,14 @@ data class PublishRelease(val variable: VariableHeader) : ControlPacketV5(6, Dir
                 props
             }
 
-            fun size(): UInt {
-                var size = 0u
+            fun size(): Int {
+                var size = 0
                 props.forEach { size += it.size() }
                 return size
             }
 
             fun serialize(buffer: WriteBuffer) {
-                buffer.writeVariableByteInteger(size().toInt())
+                buffer.writeVariableByteInteger(size())
                 props.forEach { it.write(buffer) }
             }
 
@@ -172,9 +172,9 @@ data class PublishRelease(val variable: VariableHeader) : ControlPacketV5(6, Dir
         }
 
         companion object {
-            fun from(buffer: ReadBuffer, remaining: UInt): VariableHeader {
+            fun from(buffer: ReadBuffer, remaining: Int): VariableHeader {
                 val packetIdentifier = buffer.readUnsignedShort().toInt()
-                return if (remaining == 2u) {
+                return if (remaining == 2) {
                     VariableHeader(packetIdentifier)
                 } else {
                     val reasonCodeByte = buffer.readUnsignedByte()
@@ -195,7 +195,7 @@ data class PublishRelease(val variable: VariableHeader) : ControlPacketV5(6, Dir
     }
 
     companion object {
-        fun from(buffer: ReadBuffer, remainingLength: UInt) =
+        fun from(buffer: ReadBuffer, remainingLength: Int) =
             PublishRelease(VariableHeader.from(buffer, remainingLength))
     }
 }

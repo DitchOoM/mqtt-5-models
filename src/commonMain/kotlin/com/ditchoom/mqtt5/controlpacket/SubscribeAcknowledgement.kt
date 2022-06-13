@@ -34,10 +34,10 @@ data class SubscribeAcknowledgement(val variable: VariableHeader, val payload: L
     constructor(packetIdentifier: UShort, payload: ReasonCode = SUCCESS, properties: Properties = Properties())
             : this(VariableHeader(packetIdentifier.toInt(), properties), listOf(payload))
 
-    override val packetIdentifier: Int = variable.packetIdentifier.toInt()
+    override val packetIdentifier: Int = variable.packetIdentifier
     override fun variableHeader(writeBuffer: WriteBuffer) = variable.serialize(writeBuffer)
     override fun payload(writeBuffer: WriteBuffer) = payload.forEach { writeBuffer.write(it.byte) }
-    override fun remainingLength() = variable.size().toInt() + payload.size
+    override fun remainingLength() = variable.size() + payload.size
 
     init {
         payload.forEach {
@@ -63,10 +63,10 @@ data class SubscribeAcknowledgement(val variable: VariableHeader, val payload: L
             properties.serialize(writeBuffer)
         }
 
-        fun size(): UInt {
-            var size = UShort.SIZE_BYTES.toUInt()
+        fun size(): Int {
+            var size = UShort.SIZE_BYTES
             val propsSize = properties.size()
-            size += variableByteSize(propsSize.toInt()).toUInt() + propsSize
+            size += variableByteSize(propsSize) + propsSize
             return size
         }
 
@@ -116,14 +116,14 @@ data class SubscribeAcknowledgement(val variable: VariableHeader, val payload: L
                 props
             }
 
-            fun size(): UInt {
-                var size = 0u
+            fun size(): Int {
+                var size = 0
                 props.forEach { size += it.size() }
                 return size
             }
 
             fun serialize(buffer: WriteBuffer) {
-                buffer.writeVariableByteInteger(size().toInt())
+                buffer.writeVariableByteInteger(size())
                 props.forEach { it.write(buffer) }
             }
 
@@ -152,9 +152,9 @@ data class SubscribeAcknowledgement(val variable: VariableHeader, val payload: L
         }
 
         companion object {
-            fun from(buffer: ReadBuffer, remainingLength: UInt): Pair<UInt, VariableHeader> {
+            fun from(buffer: ReadBuffer, remainingLength: Int): Pair<Int, VariableHeader> {
                 val packetIdentifier = buffer.readUnsignedShort()
-                var bytesRead = 3u
+                var bytesRead = 3
                 val props = if (remainingLength > bytesRead) {
                     val sized = buffer.readPropertiesSized()
                     bytesRead += sized.first
@@ -168,9 +168,9 @@ data class SubscribeAcknowledgement(val variable: VariableHeader, val payload: L
     }
 
     companion object {
-        fun from(buffer: ReadBuffer, remainingLength: UInt): SubscribeAcknowledgement {
+        fun from(buffer: ReadBuffer, remainingLength: Int): SubscribeAcknowledgement {
             val variableHeader = VariableHeader.from(buffer, remainingLength)
-            val max = (remainingLength - variableHeader.first).toInt()
+            val max = remainingLength - variableHeader.first
             val codes = ArrayList<ReasonCode>(max)
             while (codes.size < max) {
                 val reasonCode = when (val reasonCodeByte = buffer.readUnsignedByte()) {

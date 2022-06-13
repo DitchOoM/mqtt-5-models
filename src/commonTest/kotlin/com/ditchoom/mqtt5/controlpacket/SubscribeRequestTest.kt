@@ -36,7 +36,7 @@ class SubscribeRequestTest {
 
         // Variable header 3 bytes
         // byte 1 & 2 variable header as Ushort for packet identifier
-        assertEquals(packetIdentifier.toUShort(), buffer.readUnsignedShort())
+        assertEquals(packetIdentifier, buffer.readUnsignedShort())
 
         // byte 3 variable header, property length
         assertEquals(0.toUByte(), buffer.readUnsignedByte())
@@ -79,7 +79,7 @@ class SubscribeRequestTest {
 
         // Variable header 3 bytes
         // byte 1 & 2 variable header as Ushort for packet identifier
-        assertEquals(packetIdentifier.toUShort(), buffer.readUnsignedShort())
+        assertEquals(packetIdentifier, buffer.readUnsignedShort())
 
         // byte 3 variable header, property length
         assertEquals(0.toUByte(), buffer.readUnsignedByte())
@@ -147,7 +147,7 @@ class SubscribeRequestTest {
         val obj1 = ReasonString("yolo")
         val obj2 = obj1.copy()
         val buffer = PlatformBuffer.allocate(15)
-        buffer.writeVariableByteInteger((obj1.size() + obj2.size()).toInt())
+        buffer.writeVariableByteInteger(obj1.size() + obj2.size())
         obj1.write(buffer)
         obj2.write(buffer)
         buffer.resetForRead()

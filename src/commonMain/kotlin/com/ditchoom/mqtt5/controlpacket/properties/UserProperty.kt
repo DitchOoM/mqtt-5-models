@@ -8,12 +8,12 @@ data class UserProperty(val key: CharSequence, val value: CharSequence) : Proper
     0x26,
     Type.UTF_8_STRING_PAIR, willProperties = true
 ) {
-    override fun write(buffer: WriteBuffer): UInt {
+    override fun write(buffer: WriteBuffer): Int {
         buffer.write(identifierByte)
         buffer.writeMqttUtf8String(key)
         buffer.writeMqttUtf8String(value)
         return size()
     }
 
-    override fun size() = (5 + key.utf8Length() + value.utf8Length()).toUInt()
+    override fun size(): Int = 5 + key.utf8Length() + value.utf8Length()
 }

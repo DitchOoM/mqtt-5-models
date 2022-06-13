@@ -126,14 +126,14 @@ data class DisconnectNotification(val variable: VariableHeader = VariableHeader(
                 list
             }
 
-            fun size(): UInt {
-                var size = 0.toUInt()
+            fun size(): Int {
+                var size = 0
                 props.forEach { size += it.size() }
                 return size
             }
 
             fun serialize(buffer: WriteBuffer) {
-                buffer.writeVariableByteInteger(size().toInt())
+                buffer.writeVariableByteInteger(size())
                 props.forEach { it.write(buffer) }
             }
 
@@ -141,7 +141,7 @@ data class DisconnectNotification(val variable: VariableHeader = VariableHeader(
                 fun from(keyValuePairs: Collection<Property>?): Properties {
                     var sessionExpiryIntervalSeconds: Long? = null
                     var reasonString: CharSequence? = null
-                    var userProperty = mutableListOf<Pair<CharSequence, CharSequence>>()
+                    val userProperty = mutableListOf<Pair<CharSequence, CharSequence>>()
                     var serverReference: CharSequence? = null
                     keyValuePairs?.forEach {
                         when (it) {

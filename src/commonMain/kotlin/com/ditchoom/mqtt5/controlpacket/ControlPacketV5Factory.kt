@@ -9,7 +9,7 @@ import com.ditchoom.mqtt.controlpacket.format.ReasonCode
 object ControlPacketV5Factory : ControlPacketFactory {
 
     override fun from(buffer: ReadBuffer, byte1: UByte, remainingLength: Int) =
-        ControlPacketV5.from(buffer, byte1, remainingLength.toUInt())
+        ControlPacketV5.from(buffer, byte1, remainingLength)
 
 
     override fun pingRequest() = PingRequest

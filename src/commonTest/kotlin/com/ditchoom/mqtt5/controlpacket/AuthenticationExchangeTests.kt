@@ -46,9 +46,9 @@ class AuthenticationExchangeTests {
         buffer.resetForRead()
         assertEquals(SUCCESS.byte, buffer.readUnsignedByte(), "reason code")
         assertEquals(14, buffer.readVariableByteInteger(), "property length")
-        assertEquals(0x15, buffer.readVariableByteInteger().toInt(), "property identifier auth method")
+        assertEquals(0x15, buffer.readVariableByteInteger(), "property identifier auth method")
         assertEquals("hello", buffer.readMqttUtf8StringNotValidatedSized().second.toString(), "auth method string")
-        assertEquals(0x16, buffer.readVariableByteInteger().toInt(), "property identifier auth data")
+        assertEquals(0x16, buffer.readVariableByteInteger(), "property identifier auth data")
         assertEquals(3u, buffer.readUnsignedShort(), "auth data size")
         assertEquals("123", buffer.readUtf8(3).toString(), "auth data payload")
     }
@@ -67,9 +67,9 @@ class AuthenticationExchangeTests {
         assertEquals(12, buffer.readVariableByteInteger(), "remaining length")
         assertEquals(SUCCESS.byte, buffer.readUnsignedByte(), "reason code")
         assertEquals(10, buffer.readVariableByteInteger(), "property length")
-        assertEquals(0x15, buffer.readVariableByteInteger().toInt(), "property identifier auth method")
+        assertEquals(0x15, buffer.readVariableByteInteger(), "property identifier auth method")
         assertEquals("test", buffer.readMqttUtf8StringNotValidatedSized().second.toString(), "auth method string")
-        assertEquals(0x16, buffer.readVariableByteInteger().toInt(), "property identifier auth data")
+        assertEquals(0x16, buffer.readVariableByteInteger(), "property identifier auth data")
         assertEquals(0u, buffer.readUnsignedShort(), "auth data size")
         assertEquals("", buffer.readUtf8(0).toString(), "auth data payload")
     }
@@ -104,7 +104,7 @@ class AuthenticationExchangeTests {
         val obj2 = obj1.copy()
         val buffer = PlatformBuffer.allocate(20)
         val size = obj1.size() + obj2.size()
-        buffer.writeVariableByteInteger(size.toInt())
+        buffer.writeVariableByteInteger(size)
         obj1.write(buffer)
         obj2.write(buffer)
         buffer.resetForRead()
@@ -172,8 +172,8 @@ class AuthenticationExchangeTests {
     fun authMethodMultipleTimesThrowsProtocolError() {
         val obj1 = AuthenticationMethod("yolo")
         val buffer1 = PlatformBuffer.allocate(20)
-        val remainingLength = 2u * obj1.size() + 1u
-        buffer1.writeVariableByteInteger(remainingLength.toInt())
+        val remainingLength = 2 * obj1.size() + 1
+        buffer1.writeVariableByteInteger(remainingLength)
         obj1.write(buffer1)
         val obj2 = obj1.copy()
         obj2.write(buffer1)
@@ -189,7 +189,7 @@ class AuthenticationExchangeTests {
         val authData = AuthenticationData("123".toBuffer())
         val methodSize = method.size()
         val authDataSize = authData.size()
-        val size = (methodSize + authDataSize + authDataSize + 1u).toInt()
+        val size = methodSize + authDataSize + authDataSize + 1
         val buffer = PlatformBuffer.allocate(size)
         buffer.writeVariableByteInteger(size - 1)
         method.write(buffer)

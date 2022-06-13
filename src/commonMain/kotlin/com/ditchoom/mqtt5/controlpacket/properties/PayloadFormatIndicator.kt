@@ -6,6 +6,6 @@ data class PayloadFormatIndicator(val willMessageIsUtf8: Boolean) : Property(
     0x01, Type.BYTE,
     willProperties = true
 ) {
-    override fun size() = 2u
-    override fun write(buffer: WriteBuffer) = write(buffer, willMessageIsUtf8)
+    override fun size(): Int = 2
+    override fun write(buffer: WriteBuffer): Int = write(buffer, willMessageIsUtf8)
 }

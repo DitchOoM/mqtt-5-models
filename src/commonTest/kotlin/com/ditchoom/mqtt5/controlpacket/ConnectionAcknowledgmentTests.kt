@@ -674,7 +674,7 @@ class ConnectionAcknowledgmentTests {
         buffer.write(SERVER_SHUTTING_DOWN.byte)
         buffer.resetForRead()
         try {
-            VariableHeader.from(buffer, 2u)
+            VariableHeader.from(buffer, 2)
             fail()
         } catch (e: MalformedPacketException) {
         }

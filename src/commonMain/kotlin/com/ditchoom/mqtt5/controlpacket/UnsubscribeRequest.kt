@@ -39,9 +39,9 @@ data class UnsubscribeRequest(val variable: VariableHeader, override val topics:
     override fun variableHeader(writeBuffer: WriteBuffer) = variable.serialize(writeBuffer)
     override fun remainingLength(): Int {
         val variableSize = variable.size()
-        var payloadSize = 0u
-        topics.forEach { payloadSize += UShort.SIZE_BYTES.toUInt() + it.utf8Length().toUInt() }
-        return (variableSize + payloadSize).toInt()
+        var payloadSize = 0
+        topics.forEach { payloadSize += UShort.SIZE_BYTES + it.utf8Length() }
+        return variableSize + payloadSize
     }
 
     override fun payload(writeBuffer: WriteBuffer) = topics.forEach { writeBuffer.writeMqttUtf8String(it) }
@@ -60,8 +60,7 @@ data class UnsubscribeRequest(val variable: VariableHeader, override val topics:
         val packetIdentifier: Int,
         val properties: Properties = Properties()
     ) : Parcelable {
-        fun size() =
-            UShort.SIZE_BYTES.toUInt() + variableByteSize(properties.size().toInt()).toUInt() + properties.size()
+        fun size() = UShort.SIZE_BYTES + variableByteSize(properties.size()) + properties.size()
 
         fun serialize(writeBuffer: WriteBuffer) {
             writeBuffer.write(packetIdentifier.toUShort())
@@ -102,14 +101,14 @@ data class UnsubscribeRequest(val variable: VariableHeader, override val topics:
                 props
             }
 
-            fun size(): UInt {
-                var size = 0u
+            fun size(): Int {
+                var size = 0
                 props.forEach { size += it.size() }
                 return size
             }
 
             fun serialize(buffer: WriteBuffer) {
-                buffer.writeVariableByteInteger(size().toInt())
+                buffer.writeVariableByteInteger(size())
                 props.forEach { it.write(buffer) }
             }
 
@@ -128,12 +127,12 @@ data class UnsubscribeRequest(val variable: VariableHeader, override val topics:
         }
 
         companion object {
-            fun from(buffer: ReadBuffer): Pair<UInt, VariableHeader> {
+            fun from(buffer: ReadBuffer): Pair<Int, VariableHeader> {
                 val packetIdentifier = buffer.readUnsignedShort().toInt()
                 val sized = buffer.readPropertiesSized()
                 val props = Properties.from(sized.second)
                 return Pair(
-                    sized.first + variableByteSize(sized.first.toInt()).toUInt() + UShort.SIZE_BYTES.toUInt(),
+                    sized.first + variableByteSize(sized.first) + UShort.SIZE_BYTES,
                     VariableHeader(packetIdentifier, props)
                 )
             }
@@ -141,13 +140,13 @@ data class UnsubscribeRequest(val variable: VariableHeader, override val topics:
     }
 
     companion object {
-        fun from(buffer: ReadBuffer, remainingLength: UInt): UnsubscribeRequest {
+        fun from(buffer: ReadBuffer, remainingLength: Int): UnsubscribeRequest {
             val header = VariableHeader.from(buffer)
             val topics = mutableSetOf<CharSequence>()
             var bytesRead = header.first
             while (bytesRead < remainingLength) {
                 val result = buffer.readMqttUtf8StringNotValidatedSized()
-                bytesRead += result.first.toUInt() + UShort.SIZE_BYTES.toUInt()
+                bytesRead += result.first + UShort.SIZE_BYTES
                 topics += result.second
             }
             return UnsubscribeRequest(header.second, topics)

@@ -178,7 +178,7 @@ class SubscribeAcknowledgementTests {
         val obj1 = ReasonString("yolo")
         val obj2 = obj1.copy()
         val buffer = PlatformBuffer.allocate(15)
-        buffer.writeVariableByteInteger((obj1.size() + obj2.size()).toInt())
+        buffer.writeVariableByteInteger(obj1.size() + obj2.size())
         obj1.write(buffer)
         obj2.write(buffer)
         buffer.resetForRead()
@@ -213,6 +213,6 @@ class SubscribeAcknowledgementTests {
         variable.serialize(buffer)
         buffer.write(BANNED.byte)
         buffer.resetForRead()
-        assertFailsWith<MalformedPacketException> { SubscribeAcknowledgement.from(buffer, 4u) }
+        assertFailsWith<MalformedPacketException> { SubscribeAcknowledgement.from(buffer, 4) }
     }
 }

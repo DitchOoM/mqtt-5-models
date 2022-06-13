@@ -27,7 +27,7 @@ data class PublishReceived(val variable: VariableHeader) : ControlPacketV5(5, Di
     override fun expectedResponse() = PublishRelease(variable.packetIdentifier.toUShort())
     override val packetIdentifier: Int = variable.packetIdentifier
     override fun variableHeader(writeBuffer: WriteBuffer) = variable.serialize(writeBuffer)
-    override fun remainingLength() = variable.size().toInt()
+    override fun remainingLength() = variable.size()
 
     @Parcelize
     data class VariableHeader(
@@ -58,14 +58,14 @@ data class PublishReceived(val variable: VariableHeader) : ControlPacketV5(5, Di
             }
         }
 
-        fun size(): UInt {
+        fun size(): Int {
             val canOmitReasonCodeAndProperties = (reasonCode == SUCCESS
                     && properties.userProperty.isEmpty()
                     && properties.reasonString == null)
-            var size = UShort.SIZE_BYTES.toUInt()
+            var size = UShort.SIZE_BYTES
             if (!canOmitReasonCodeAndProperties) {
                 val propsSize = properties.size()
-                size += UByte.SIZE_BYTES.toUInt() + variableByteSize(propsSize.toInt()).toUInt() + propsSize
+                size += UByte.SIZE_BYTES + variableByteSize(propsSize) + propsSize
             }
             return size
         }
@@ -125,14 +125,14 @@ data class PublishReceived(val variable: VariableHeader) : ControlPacketV5(5, Di
                 props
             }
 
-            fun size(): UInt {
-                var size = 0u
+            fun size(): Int {
+                var size = 0
                 props.forEach { size += it.size() }
                 return size
             }
 
             fun serialize(buffer: WriteBuffer) {
-                buffer.writeVariableByteInteger(size().toInt())
+                buffer.writeVariableByteInteger(size())
                 props.forEach { it.write(buffer) }
             }
 
@@ -162,9 +162,9 @@ data class PublishReceived(val variable: VariableHeader) : ControlPacketV5(5, Di
 
         companion object {
 
-            fun from(buffer: ReadBuffer, remainingLength: UInt): VariableHeader {
+            fun from(buffer: ReadBuffer, remainingLength: Int): VariableHeader {
                 val packetIdentifier = buffer.readUnsignedShort().toInt()
-                if (remainingLength == 2u) {
+                if (remainingLength == 2) {
                     return VariableHeader(packetIdentifier)
                 } else {
                     val reasonCodeByte = buffer.readUnsignedByte()
@@ -192,7 +192,7 @@ data class PublishReceived(val variable: VariableHeader) : ControlPacketV5(5, Di
     }
 
     companion object {
-        fun from(buffer: ReadBuffer, remainingLength: UInt) =
+        fun from(buffer: ReadBuffer, remainingLength: Int) =
             PublishReceived(VariableHeader.from(buffer, remainingLength))
     }
 }

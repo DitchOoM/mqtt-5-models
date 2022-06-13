@@ -2,7 +2,6 @@ package com.ditchoom.mqtt5.controlpacket
 
 import com.ditchoom.buffer.PlatformBuffer
 import com.ditchoom.buffer.allocate
-import com.ditchoom.mqtt.MalformedPacketException
 import com.ditchoom.mqtt.ProtocolError
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.readMqttUtf8StringNotValidatedSized
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.readVariableByteInteger
@@ -174,7 +173,7 @@ class UnsubscribeAcknowledgmentTests {
         val obj1 = ReasonString("yolo")
         val obj2 = obj1.copy()
         val buffer = PlatformBuffer.allocate(15)
-        buffer.writeVariableByteInteger((obj1.size() + obj2.size()).toInt())
+        buffer.writeVariableByteInteger(obj1.size() + obj2.size())
         obj1.write(buffer)
         obj2.write(buffer)
         buffer.resetForRead()
@@ -206,13 +205,4 @@ class UnsubscribeAcknowledgmentTests {
         assertEquals("value", value.toString())
     }
 
-    @Test
-    fun invalidReasonCode() {
-        val variable = VariableHeader(packetIdentifier)
-        val buffer = PlatformBuffer.allocate(4)
-        variable.serialize(buffer)
-        buffer.write(BANNED.byte)
-        buffer.resetForRead()
-        assertFailsWith<MalformedPacketException> { UnsubscribeAcknowledgment.from(buffer, 2u) }
-    }
 }

@@ -26,7 +26,7 @@ import com.ditchoom.mqtt5.controlpacket.properties.*
 data class AuthenticationExchange(val variable: VariableHeader) :
     ControlPacketV5(15, DirectionOfFlow.BIDIRECTIONAL) {
 
-    override fun remainingLength() = variable.size().toInt()
+    override fun remainingLength() = variable.size()
     override fun variableHeader(writeBuffer: WriteBuffer) = variable.serialize(writeBuffer)
 
     /**
@@ -63,9 +63,9 @@ data class AuthenticationExchange(val variable: VariableHeader) :
             getReasonCode(reasonCode.byte)
         }
 
-        fun size(): UInt {
+        fun size(): Int {
             val propSize = properties.size()
-            return propSize + UByte.SIZE_BYTES.toUInt() + variableByteSize(propSize.toInt()).toUInt()
+            return propSize + UByte.SIZE_BYTES + variableByteSize(propSize)
         }
 
         fun serialize(writeBuffer: WriteBuffer) {
@@ -80,14 +80,14 @@ data class AuthenticationExchange(val variable: VariableHeader) :
             val userProperty: List<Pair<CharSequence, CharSequence>> = emptyList()
         ) : Parcelable {
 
-            fun size(): UInt {
+            fun size(): Int {
                 val authMethod = if (authentication != null) AuthenticationMethod(authentication.method) else null
                 val authData = if (authentication != null) AuthenticationData(authentication.data) else null
                 val authReasonString = if (reasonString != null) ReasonString(reasonString) else null
                 val props = userProperty.map { UserProperty(it.first, it.second) }
-                var size = authMethod?.size() ?: 0u
-                size += authData?.size() ?: 0.toUInt()
-                size += authReasonString?.size() ?: 0.toUInt()
+                var size = authMethod?.size() ?: 0
+                size += authData?.size() ?: 0
+                size += authReasonString?.size() ?: 0
                 props.forEach {
                     size += it.size()
                 }
@@ -100,7 +100,7 @@ data class AuthenticationExchange(val variable: VariableHeader) :
                 val authReasonString = if (reasonString != null) ReasonString(reasonString) else null
                 val props = userProperty.map { UserProperty(it.first, it.second) }
                 val size = size()
-                writeBuffer.writeVariableByteInteger(size.toInt())
+                writeBuffer.writeVariableByteInteger(size)
                 authMethod?.write(writeBuffer)
                 authData?.write(writeBuffer)
                 authReasonString?.write(writeBuffer)

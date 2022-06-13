@@ -28,16 +28,16 @@ abstract class ControlPacketV5(
 
         fun fromTyped(buffer: ReadBuffer): ControlPacketV5 {
             val byte1 = buffer.readUnsignedByte()
-            val remainingLength = buffer.readVariableByteInteger().toUInt()
+            val remainingLength = buffer.readVariableByteInteger()
             return fromTyped(buffer, byte1, remainingLength)
         }
 
-        fun from(buffer: ReadBuffer, byte1: UByte, remainingLength: UInt) = fromTyped(buffer, byte1, remainingLength)
+        fun from(buffer: ReadBuffer, byte1: UByte, remainingLength: Int) = fromTyped(buffer, byte1, remainingLength)
 
         fun fromTyped(
             buffer: ReadBuffer,
             byte1: UByte,
-            remainingLength: UInt
+            remainingLength: Int
         ): ControlPacketV5 {
             val byte1AsUInt = byte1.toUInt()
             val packetValue = byte1AsUInt.shr(4).toInt()
