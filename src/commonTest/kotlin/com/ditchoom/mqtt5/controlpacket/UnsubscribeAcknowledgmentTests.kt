@@ -1,8 +1,7 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
-
 package com.ditchoom.mqtt5.controlpacket
 
-import com.ditchoom.buffer.allocateNewBuffer
+import com.ditchoom.buffer.PlatformBuffer
+import com.ditchoom.buffer.allocate
 import com.ditchoom.mqtt.MalformedPacketException
 import com.ditchoom.mqtt.ProtocolError
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.readMqttUtf8StringNotValidatedSized
@@ -24,14 +23,14 @@ class UnsubscribeAcknowledgmentTests {
     @Test
     fun serializeDeserializeDefault() {
         val actual = UnsubscribeAcknowledgment(VariableHeader(packetIdentifier))
-        val buffer = allocateNewBuffer(6u)
+        val buffer = PlatformBuffer.allocate(6)
         actual.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b10110000.toByte(), buffer.readByte(), "fixed header byte 1")
-        assertEquals(4u, buffer.readVariableByteInteger(), "fixed header byte 2 remaining length")
+        assertEquals(4, buffer.readVariableByteInteger(), "fixed header byte 2 remaining length")
         assertEquals(0, buffer.readByte(), "variable header byte 1 packet identifier msb")
         assertEquals(2, buffer.readByte(), "variable header byte 2 packet identifier lsb")
-        assertEquals(0u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(0, buffer.readVariableByteInteger(), "property length")
         assertEquals(SUCCESS.byte, buffer.readUnsignedByte(), "payload reason code")
         buffer.resetForRead()
         val expected = ControlPacketV5.from(buffer)
@@ -41,14 +40,14 @@ class UnsubscribeAcknowledgmentTests {
     @Test
     fun serializeDeserializeNoSubscriptionsExisted() {
         val actual = UnsubscribeAcknowledgment(VariableHeader(packetIdentifier), listOf(NO_SUBSCRIPTIONS_EXISTED))
-        val buffer = allocateNewBuffer(6u)
+        val buffer = PlatformBuffer.allocate(6)
         actual.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b10110000.toByte(), buffer.readByte(), "fixed header byte 1")
-        assertEquals(4u, buffer.readVariableByteInteger(), "fixed header byte 2 remaining length")
+        assertEquals(4, buffer.readVariableByteInteger(), "fixed header byte 2 remaining length")
         assertEquals(0, buffer.readByte(), "variable header byte 1 packet identifier msb")
         assertEquals(2, buffer.readByte(), "variable header byte 2 packet identifier lsb")
-        assertEquals(0u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(0, buffer.readVariableByteInteger(), "property length")
         assertEquals(NO_SUBSCRIPTIONS_EXISTED.byte, buffer.readUnsignedByte(), "payload reason code")
         buffer.resetForRead()
         val expected = ControlPacketV5.from(buffer)
@@ -58,14 +57,14 @@ class UnsubscribeAcknowledgmentTests {
     @Test
     fun serializeDeserializeUnspecifiedError() {
         val actual = UnsubscribeAcknowledgment(VariableHeader(packetIdentifier), listOf(UNSPECIFIED_ERROR))
-        val buffer = allocateNewBuffer(6u)
+        val buffer = PlatformBuffer.allocate(6)
         actual.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b10110000.toByte(), buffer.readByte(), "fixed header byte 1")
-        assertEquals(4u, buffer.readVariableByteInteger(), "fixed header byte 2 remaining length")
+        assertEquals(4, buffer.readVariableByteInteger(), "fixed header byte 2 remaining length")
         assertEquals(0, buffer.readByte(), "variable header byte 1 packet identifier msb")
         assertEquals(2, buffer.readByte(), "variable header byte 2 packet identifier lsb")
-        assertEquals(0u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(0, buffer.readVariableByteInteger(), "property length")
         assertEquals(UNSPECIFIED_ERROR.byte, buffer.readUnsignedByte(), "payload reason code")
         buffer.resetForRead()
         val expected = ControlPacketV5.from(buffer)
@@ -75,14 +74,14 @@ class UnsubscribeAcknowledgmentTests {
     @Test
     fun serializeDeserializeImplementationSpecificError() {
         val actual = UnsubscribeAcknowledgment(VariableHeader(packetIdentifier), listOf(IMPLEMENTATION_SPECIFIC_ERROR))
-        val buffer = allocateNewBuffer(6u)
+        val buffer = PlatformBuffer.allocate(6)
         actual.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b10110000.toByte(), buffer.readByte(), "fixed header byte 1")
-        assertEquals(4u, buffer.readVariableByteInteger(), "fixed header byte 2 remaining length")
+        assertEquals(4, buffer.readVariableByteInteger(), "fixed header byte 2 remaining length")
         assertEquals(0, buffer.readByte(), "variable header byte 1 packet identifier msb")
         assertEquals(2, buffer.readByte(), "variable header byte 2 packet identifier lsb")
-        assertEquals(0u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(0, buffer.readVariableByteInteger(), "property length")
         assertEquals(IMPLEMENTATION_SPECIFIC_ERROR.byte, buffer.readUnsignedByte(), "payload reason code")
         buffer.resetForRead()
         val expected = ControlPacketV5.from(buffer)
@@ -92,14 +91,14 @@ class UnsubscribeAcknowledgmentTests {
     @Test
     fun serializeDeserializeNotAuthorized() {
         val actual = UnsubscribeAcknowledgment(VariableHeader(packetIdentifier), listOf(NOT_AUTHORIZED))
-        val buffer = allocateNewBuffer(6u)
+        val buffer = PlatformBuffer.allocate(6)
         actual.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b10110000.toByte(), buffer.readByte(), "fixed header byte 1")
-        assertEquals(4u, buffer.readVariableByteInteger(), "fixed header byte 2 remaining length")
+        assertEquals(4, buffer.readVariableByteInteger(), "fixed header byte 2 remaining length")
         assertEquals(0, buffer.readByte(), "variable header byte 1 packet identifier msb")
         assertEquals(2, buffer.readByte(), "variable header byte 2 packet identifier lsb")
-        assertEquals(0u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(0, buffer.readVariableByteInteger(), "property length")
         assertEquals(NOT_AUTHORIZED.byte, buffer.readUnsignedByte(), "payload reason code")
         buffer.resetForRead()
         val expected = ControlPacketV5.from(buffer)
@@ -109,14 +108,14 @@ class UnsubscribeAcknowledgmentTests {
     @Test
     fun serializeDeserializeTopicFilterInvalid() {
         val actual = UnsubscribeAcknowledgment(VariableHeader(packetIdentifier), listOf(TOPIC_FILTER_INVALID))
-        val buffer = allocateNewBuffer(6u)
+        val buffer = PlatformBuffer.allocate(6)
         actual.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b10110000.toByte(), buffer.readByte(), "fixed header byte 1")
-        assertEquals(4u, buffer.readVariableByteInteger(), "fixed header byte 2 remaining length")
+        assertEquals(4, buffer.readVariableByteInteger(), "fixed header byte 2 remaining length")
         assertEquals(0, buffer.readByte(), "variable header byte 1 packet identifier msb")
         assertEquals(2, buffer.readByte(), "variable header byte 2 packet identifier lsb")
-        assertEquals(0u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(0, buffer.readVariableByteInteger(), "property length")
         assertEquals(TOPIC_FILTER_INVALID.byte, buffer.readUnsignedByte(), "payload reason code")
         buffer.resetForRead()
         val expected = ControlPacketV5.from(buffer)
@@ -135,14 +134,14 @@ class UnsubscribeAcknowledgmentTests {
     @Test
     fun serializeDeserializePacketIdentifierInUse() {
         val actual = UnsubscribeAcknowledgment(VariableHeader(packetIdentifier), listOf(PACKET_IDENTIFIER_IN_USE))
-        val buffer = allocateNewBuffer(6u)
+        val buffer = PlatformBuffer.allocate(6)
         actual.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b10110000.toByte(), buffer.readByte(), "fixed header byte 1")
-        assertEquals(4u, buffer.readVariableByteInteger(), "fixed header byte 2 remaining length")
+        assertEquals(4, buffer.readVariableByteInteger(), "fixed header byte 2 remaining length")
         assertEquals(0, buffer.readByte(), "variable header byte 1 packet identifier msb")
         assertEquals(2, buffer.readByte(), "variable header byte 2 packet identifier lsb")
-        assertEquals(0u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(0, buffer.readVariableByteInteger(), "property length")
         assertEquals(PACKET_IDENTIFIER_IN_USE.byte, buffer.readUnsignedByte(), "payload reason code")
         buffer.resetForRead()
         val expected = ControlPacketV5.from(buffer)
@@ -154,14 +153,14 @@ class UnsubscribeAcknowledgmentTests {
         val props = VariableHeader.Properties(reasonString = "yolo")
         val header = VariableHeader(packetIdentifier, properties = props)
         val actual = UnsubscribeAcknowledgment(header)
-        val buffer = allocateNewBuffer(13u)
+        val buffer = PlatformBuffer.allocate(13)
         actual.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b10110000.toByte(), buffer.readByte(), "fixed header byte 1")
-        assertEquals(11u, buffer.readVariableByteInteger(), "fixed header byte 2 remaining length")
+        assertEquals(11, buffer.readVariableByteInteger(), "fixed header byte 2 remaining length")
         assertEquals(0, buffer.readByte(), "variable header byte 1 packet identifier msb")
         assertEquals(2, buffer.readByte(), "variable header byte 2 packet identifier lsb")
-        assertEquals(7u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(7, buffer.readVariableByteInteger(), "property length")
         assertEquals(0x1F, buffer.readByte(), "property type matching reason code")
         assertEquals("yolo", buffer.readMqttUtf8StringNotValidatedSized().second.toString(), "reason code value")
         assertEquals(SUCCESS.byte, buffer.readUnsignedByte(), "payload reason code")
@@ -174,8 +173,8 @@ class UnsubscribeAcknowledgmentTests {
     fun reasonStringMultipleTimesThrowsProtocolError() {
         val obj1 = ReasonString("yolo")
         val obj2 = obj1.copy()
-        val buffer = allocateNewBuffer(15u)
-        buffer.writeVariableByteInteger(obj1.size() + obj2.size())
+        val buffer = PlatformBuffer.allocate(15)
+        buffer.writeVariableByteInteger((obj1.size() + obj2.size()).toInt())
         obj1.write(buffer)
         obj2.write(buffer)
         buffer.resetForRead()
@@ -198,7 +197,7 @@ class UnsubscribeAcknowledgmentTests {
         assertEquals(userPropertyResult.size, 1)
 
         val request = UnsubscribeAcknowledgment(VariableHeader(packetIdentifier, properties = props))
-        val buffer = allocateNewBuffer(19u)
+        val buffer = PlatformBuffer.allocate(19)
         request.serialize(buffer)
         buffer.resetForRead()
         val requestRead = ControlPacketV5.from(buffer) as UnsubscribeAcknowledgment
@@ -210,7 +209,7 @@ class UnsubscribeAcknowledgmentTests {
     @Test
     fun invalidReasonCode() {
         val variable = VariableHeader(packetIdentifier)
-        val buffer = allocateNewBuffer(4u)
+        val buffer = PlatformBuffer.allocate(4)
         variable.serialize(buffer)
         buffer.write(BANNED.byte)
         buffer.resetForRead()

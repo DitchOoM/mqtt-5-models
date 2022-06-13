@@ -1,8 +1,7 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS", "UNCHECKED_CAST")
-
 package com.ditchoom.mqtt5.controlpacket
 
-import com.ditchoom.buffer.allocateNewBuffer
+import com.ditchoom.buffer.PlatformBuffer
+import com.ditchoom.buffer.allocate
 import com.ditchoom.buffer.toBuffer
 import com.ditchoom.mqtt.MalformedPacketException
 import com.ditchoom.mqtt.MqttWarning
@@ -22,7 +21,7 @@ class ConnectionRequestTests {
     @Test
     fun serializeDefaults() {
         val connectionRequest = ConnectionRequest()
-        val buffer = allocateNewBuffer(15u)
+        val buffer = PlatformBuffer.allocate(15)
         connectionRequest.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b00010000, buffer.readByte(), "invalid byte 1 on the CONNECT fixed header")
@@ -77,14 +76,14 @@ class ConnectionRequestTests {
             "invalid byte 8 bit 0 on the CONNECT variable header for reserved flag"
         )
         assertEquals(UShort.MAX_VALUE, buffer.readUnsignedShort(), "invalid keep alive")
-        assertEquals(0u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(0, buffer.readVariableByteInteger(), "property length")
         assertEquals("", buffer.readMqttUtf8StringNotValidatedSized().second.toString(), "client id")
     }
 
     @Test
     fun serializeAtMostOnce() {
         val connectionRequest = ConnectionRequest(VariableHeader(willQos = AT_MOST_ONCE))
-        val buffer = allocateNewBuffer(15u)
+        val buffer = PlatformBuffer.allocate(15)
         assertEquals(11u, connectionRequest.variableHeader.size(), "variable header size")
         assertEquals(2u, connectionRequest.payload.size(), "payload size")
         connectionRequest.serialize(buffer)
@@ -141,7 +140,7 @@ class ConnectionRequestTests {
             "invalid byte 8 bit 0 on the CONNECT variable header for reserved flag"
         )
         assertEquals(UShort.MAX_VALUE, buffer.readUnsignedShort(), "invalid keep alive")
-        assertEquals(0u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(0, buffer.readVariableByteInteger(), "property length")
         assertEquals("", buffer.readMqttUtf8StringNotValidatedSized().second.toString(), "client id")
     }
 
@@ -151,7 +150,7 @@ class ConnectionRequestTests {
             VariableHeader(willQos = AT_MOST_ONCE, hasUserName = true),
             ConnectionRequest.Payload(userName = "yolo")
         )
-        val buffer = allocateNewBuffer(21u)
+        val buffer = PlatformBuffer.allocate(21)
         connectionRequest.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b00010000, buffer.readByte(), "invalid byte 1 on the CONNECT fixed header")
@@ -206,7 +205,7 @@ class ConnectionRequestTests {
             "invalid byte 8 bit 0 on the CONNECT variable header for reserved flag"
         )
         assertEquals(UShort.MAX_VALUE, buffer.readUnsignedShort(), "invalid keep alive")
-        assertEquals(0u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(0, buffer.readVariableByteInteger(), "property length")
         assertEquals("", buffer.readMqttUtf8StringNotValidatedSized().second.toString(), "client id")
         assertEquals("yolo", buffer.readMqttUtf8StringNotValidatedSized().second.toString(), "username")
     }
@@ -217,7 +216,7 @@ class ConnectionRequestTests {
             VariableHeader(willQos = AT_MOST_ONCE, hasPassword = true),
             ConnectionRequest.Payload(password = "yolo")
         )
-        val buffer = allocateNewBuffer(21u)
+        val buffer = PlatformBuffer.allocate(21)
         connectionRequest.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b00010000, buffer.readByte(), "invalid byte 1 on the CONNECT fixed header")
@@ -272,7 +271,7 @@ class ConnectionRequestTests {
             "invalid byte 8 bit 0 on the CONNECT variable header for reserved flag"
         )
         assertEquals(UShort.MAX_VALUE, buffer.readUnsignedShort(), "invalid keep alive")
-        assertEquals(0u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(0, buffer.readVariableByteInteger(), "property length")
         assertEquals("", buffer.readMqttUtf8StringNotValidatedSized().second.toString(), "client id")
         assertEquals("yolo", buffer.readMqttUtf8StringNotValidatedSized().second.toString(), "password")
     }
@@ -290,7 +289,7 @@ class ConnectionRequestTests {
     fun serializeAtMostOnceHasWillRetain() {
         val connectionRequest =
             ConnectionRequest(VariableHeader(willQos = AT_MOST_ONCE, willRetain = true))
-        val buffer = allocateNewBuffer(15u)
+        val buffer = PlatformBuffer.allocate(15)
         connectionRequest.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b00010000, buffer.readByte(), "invalid byte 1 on the CONNECT fixed header")
@@ -345,7 +344,7 @@ class ConnectionRequestTests {
             "invalid byte 8 bit 0 on the CONNECT variable header for reserved flag"
         )
         assertEquals(UShort.MAX_VALUE, buffer.readUnsignedShort(), "invalid keep alive")
-        assertEquals(0u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(0, buffer.readVariableByteInteger(), "property length")
         assertEquals("", buffer.readMqttUtf8StringNotValidatedSized().second.toString(), "client id")
     }
 
@@ -353,7 +352,7 @@ class ConnectionRequestTests {
     fun serializeExactlyOnce() {
         val connectionRequest =
             ConnectionRequest(VariableHeader(willQos = QualityOfService.EXACTLY_ONCE))
-        val buffer = allocateNewBuffer(15u)
+        val buffer = PlatformBuffer.allocate(15)
         connectionRequest.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b00010000, buffer.readByte(), "invalid byte 1 on the CONNECT fixed header")
@@ -408,7 +407,7 @@ class ConnectionRequestTests {
             "invalid byte 8 bit 0 on the CONNECT variable header for reserved flag"
         )
         assertEquals(UShort.MAX_VALUE, buffer.readUnsignedShort(), "invalid keep alive")
-        assertEquals(0u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(0, buffer.readVariableByteInteger(), "property length")
         assertEquals("", buffer.readMqttUtf8StringNotValidatedSized().second.toString(), "client id")
     }
 
@@ -416,7 +415,7 @@ class ConnectionRequestTests {
     fun serializeAtMostOnceWillFlagTrue() {
         val connectionRequest =
             ConnectionRequest(VariableHeader(willQos = AT_MOST_ONCE, willFlag = true))
-        val buffer = allocateNewBuffer(15u)
+        val buffer = PlatformBuffer.allocate(15)
         connectionRequest.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b00010000, buffer.readByte(), "invalid byte 1 on the CONNECT fixed header")
@@ -471,7 +470,7 @@ class ConnectionRequestTests {
             "invalid byte 8 bit 0 on the CONNECT variable header for reserved flag"
         )
         assertEquals(UShort.MAX_VALUE, buffer.readUnsignedShort(), "invalid keep alive")
-        assertEquals(0u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(0, buffer.readVariableByteInteger(), "property length")
         assertEquals("", buffer.readMqttUtf8StringNotValidatedSized().second.toString(), "client id")
     }
 
@@ -479,7 +478,7 @@ class ConnectionRequestTests {
     fun variableHeaderConnectFlagsByte8HasCleanStart() {
         val connectionRequest =
             ConnectionRequest(VariableHeader(willQos = AT_MOST_ONCE, cleanStart = true))
-        val buffer = allocateNewBuffer(15u)
+        val buffer = PlatformBuffer.allocate(15)
         connectionRequest.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b00010000, buffer.readByte(), "invalid byte 1 on the CONNECT fixed header")
@@ -534,7 +533,7 @@ class ConnectionRequestTests {
             "invalid byte 8 bit 0 on the CONNECT variable header for reserved flag"
         )
         assertEquals(UShort.MAX_VALUE, buffer.readUnsignedShort(), "invalid keep alive")
-        assertEquals(0u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(0, buffer.readVariableByteInteger(), "property length")
         assertEquals("", buffer.readMqttUtf8StringNotValidatedSized().second.toString(), "client id")
     }
 
@@ -542,7 +541,7 @@ class ConnectionRequestTests {
     @Test
     fun variableHeaderKeepAliveMax() {
         val connectionRequest = ConnectionRequest(VariableHeader(keepAliveSeconds = 4))
-        val buffer = allocateNewBuffer(15u)
+        val buffer = PlatformBuffer.allocate(15)
         connectionRequest.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b00010000, buffer.readByte(), "invalid byte 1 on the CONNECT fixed header")
@@ -597,7 +596,7 @@ class ConnectionRequestTests {
             "invalid byte 8 bit 0 on the CONNECT variable header for reserved flag"
         )
         assertEquals(4u, buffer.readUnsignedShort(), "invalid keep alive")
-        assertEquals(0u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(0, buffer.readVariableByteInteger(), "property length")
         assertEquals("", buffer.readMqttUtf8StringNotValidatedSized().second.toString(), "client id")
     }
 
@@ -605,7 +604,7 @@ class ConnectionRequestTests {
     fun sessionExpiry() {
         val props = VariableHeader.Properties(sessionExpiryIntervalSeconds = 1L)
         val connectionRequest = ConnectionRequest(VariableHeader(properties = props))
-        val buffer = allocateNewBuffer(20u)
+        val buffer = PlatformBuffer.allocate(20)
         connectionRequest.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b00010000, buffer.readByte(), "invalid byte 1 on the CONNECT fixed header")
@@ -660,7 +659,7 @@ class ConnectionRequestTests {
             "invalid byte 8 bit 0 on the CONNECT variable header for reserved flag"
         )
         assertEquals(UShort.MAX_VALUE, buffer.readUnsignedShort(), "invalid keep alive")
-        assertEquals(5u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(5, buffer.readVariableByteInteger(), "property length")
         assertEquals(0x11, buffer.readByte(), "property identifier")
         assertEquals(1u, buffer.readUnsignedInt(), "session expiry interval seconds")
         assertEquals("", buffer.readMqttUtf8StringNotValidatedSized().second.toString(), "client id")
@@ -685,7 +684,7 @@ class ConnectionRequestTests {
     fun variableHeaderPropertyReceiveMaximum() {
         val props = VariableHeader.Properties.from(setOf(ReceiveMaximum(5)))
         assertEquals(props.receiveMaximum, 5)
-        val buffer = allocateNewBuffer(18u)
+        val buffer = PlatformBuffer.allocate(18)
         val request = ConnectionRequest(VariableHeader(properties = props))
         request.serialize(buffer)
         buffer.resetForRead()
@@ -724,7 +723,7 @@ class ConnectionRequestTests {
     fun variableHeaderPropertyMaximumPacketSize() {
         val props = VariableHeader.Properties.from(setOf(MaximumPacketSize(5)))
         assertEquals(props.maximumPacketSize, 5)
-        val buffer = allocateNewBuffer(20u)
+        val buffer = PlatformBuffer.allocate(20)
         val request = ConnectionRequest(VariableHeader(properties = props))
         request.serialize(buffer)
         buffer.resetForRead()
@@ -754,7 +753,7 @@ class ConnectionRequestTests {
     fun variableHeaderPropertyTopicAliasMaximum() {
         val props = VariableHeader.Properties.from(setOf(TopicAliasMaximum(5)))
         assertEquals(props.topicAliasMaximum, 5)
-        val buffer = allocateNewBuffer(18u)
+        val buffer = PlatformBuffer.allocate(18)
         val request = ConnectionRequest(VariableHeader(properties = props))
         request.serialize(buffer)
         buffer.resetForRead()
@@ -776,7 +775,7 @@ class ConnectionRequestTests {
         val props =
             VariableHeader.Properties.from(setOf(RequestResponseInformation(true)))
         assertEquals(props.requestResponseInformation, true)
-        val buffer = allocateNewBuffer(18u)
+        val buffer = PlatformBuffer.allocate(18)
         val request = ConnectionRequest(VariableHeader(properties = props))
         request.serialize(buffer)
         buffer.resetForRead()
@@ -799,7 +798,7 @@ class ConnectionRequestTests {
             VariableHeader.Properties.from(setOf(RequestProblemInformation(true)))
         assertEquals(props.requestProblemInformation, true)
 
-        val buffer = allocateNewBuffer(17u)
+        val buffer = PlatformBuffer.allocate(17)
         val request = ConnectionRequest(VariableHeader(properties = props))
         request.serialize(buffer)
         buffer.resetForRead()
@@ -855,7 +854,7 @@ class ConnectionRequestTests {
             "invalid byte 8 bit 0 on the CONNECT variable header for reserved flag"
         )
         assertEquals(UShort.MAX_VALUE, buffer.readUnsignedShort(), "invalid keep alive")
-        assertEquals(2u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(2, buffer.readVariableByteInteger(), "property length")
         assertEquals(0x17, buffer.readByte(), "missing property identifier request problem info")
         assertEquals(1, buffer.readByte(), "incorrect request problem info flag")
         assertEquals("", buffer.readMqttUtf8StringNotValidatedSized().second.toString(), "client id")
@@ -883,7 +882,7 @@ class ConnectionRequestTests {
             assertEquals(value, "value")
         }
         assertEquals(userPropertyResult.size, 1)
-        val buffer = allocateNewBuffer(28u)
+        val buffer = PlatformBuffer.allocate(28)
         val request = ConnectionRequest(VariableHeader(properties = props))
         request.serialize(buffer)
         buffer.resetForRead()
@@ -915,7 +914,7 @@ class ConnectionRequestTests {
         assertEquals(auth.method, "yolo")
         assertEquals(auth.data.readUtf8(3).toString(), "123")
 
-        val buffer = allocateNewBuffer(28u)
+        val buffer = PlatformBuffer.allocate(28)
         val variable = VariableHeader(properties = props)
         val request = ConnectionRequest(variable)
         request.serialize(buffer)
@@ -961,7 +960,7 @@ class ConnectionRequestTests {
 
     @Test
     fun packetQos0() {
-        val buffer = allocateNewBuffer(15u)
+        val buffer = PlatformBuffer.allocate(15)
         val request = ConnectionRequest(
             VariableHeader("", willQos = AT_MOST_ONCE),
             ConnectionRequest.Payload("")

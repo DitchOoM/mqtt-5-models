@@ -1,11 +1,8 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE")
-
 package com.ditchoom.mqtt5.controlpacket
 
 import com.ditchoom.buffer.toBuffer
 import com.ditchoom.mqtt.controlpacket.format.ReasonCode.*
 import com.ditchoom.mqtt.controlpacket.format.fixed.DirectionOfFlow.*
-import com.ditchoom.mqtt.topic.Filter
 import com.ditchoom.mqtt5.controlpacket.PublishMessage.VariableHeader
 import com.ditchoom.mqtt5.controlpacket.properties.Authentication
 import kotlin.test.Test
@@ -70,7 +67,7 @@ class TypeTests {
             8,
             SubscribeRequest(
                 SubscribeRequest.VariableHeader(packetIdentifier),
-                setOf(Subscription(Filter("yolo")))
+                setOf(Subscription("yolo"))
             ).controlPacketValue,
             controlPacketSpectMatchError
         )
@@ -193,7 +190,7 @@ class TypeTests {
             CLIENT_TO_SERVER,
             SubscribeRequest(
                 SubscribeRequest.VariableHeader(packetIdentifier),
-                setOf(Subscription(Filter("yolo")))
+                setOf(Subscription("yolo"))
             ).direction,
             controlPacketSpectMatchError
         )

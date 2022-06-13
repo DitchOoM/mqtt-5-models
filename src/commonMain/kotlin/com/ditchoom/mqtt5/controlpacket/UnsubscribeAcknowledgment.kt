@@ -1,5 +1,3 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_OVERRIDE")
-
 package com.ditchoom.mqtt5.controlpacket
 
 import com.ditchoom.buffer.Parcelable
@@ -33,10 +31,10 @@ data class UnsubscribeAcknowledgment(
 
     override fun variableHeader(writeBuffer: WriteBuffer) = variable.serialize(writeBuffer)
 
-    override fun remainingLength(): UInt {
+    override fun remainingLength(): Int {
         val variableSize = variable.size()
         val subSize = reasonCodes.size.toUInt()
-        return variableSize + subSize
+        return (variableSize + subSize).toInt()
     }
 
     override fun payload(writeBuffer: WriteBuffer) = reasonCodes.forEach { writeBuffer.write(it.byte) }
@@ -56,7 +54,7 @@ data class UnsubscribeAcknowledgment(
         val properties: Properties = Properties()
     ) : Parcelable {
         fun size() =
-            UShort.SIZE_BYTES.toUInt() + variableByteSize(properties.size()) + properties.size()
+            UShort.SIZE_BYTES.toUInt() + variableByteSize(properties.size().toInt()).toUInt() + properties.size()
 
         fun serialize(writeBuffer: WriteBuffer) {
             writeBuffer.write(packetIdentifier.toUShort())
@@ -118,7 +116,7 @@ data class UnsubscribeAcknowledgment(
             }
 
             fun serialize(buffer: WriteBuffer) {
-                buffer.writeVariableByteInteger(size())
+                buffer.writeVariableByteInteger(size().toInt())
                 props.forEach { it.write(buffer) }
             }
 
@@ -152,7 +150,7 @@ data class UnsubscribeAcknowledgment(
                 val sized = buffer.readPropertiesSized()
                 val props = Properties.from(sized.second)
                 return Pair(
-                    UShort.SIZE_BYTES.toUInt() + variableByteSize(sized.first) + sized.first,
+                    UShort.SIZE_BYTES.toUInt() + variableByteSize(sized.first.toInt()).toUInt() + sized.first,
                     VariableHeader(packetIdentifier.toInt(), props)
                 )
             }

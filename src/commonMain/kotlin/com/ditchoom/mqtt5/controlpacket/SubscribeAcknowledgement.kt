@@ -1,5 +1,3 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_OVERRIDE")
-
 package com.ditchoom.mqtt5.controlpacket
 
 import com.ditchoom.buffer.Parcelable
@@ -39,7 +37,7 @@ data class SubscribeAcknowledgement(val variable: VariableHeader, val payload: L
     override val packetIdentifier: Int = variable.packetIdentifier.toInt()
     override fun variableHeader(writeBuffer: WriteBuffer) = variable.serialize(writeBuffer)
     override fun payload(writeBuffer: WriteBuffer) = payload.forEach { writeBuffer.write(it.byte) }
-    override fun remainingLength() = variable.size() + payload.size.toUInt()
+    override fun remainingLength() = variable.size().toInt() + payload.size
 
     init {
         payload.forEach {
@@ -68,7 +66,7 @@ data class SubscribeAcknowledgement(val variable: VariableHeader, val payload: L
         fun size(): UInt {
             var size = UShort.SIZE_BYTES.toUInt()
             val propsSize = properties.size()
-            size += variableByteSize(propsSize) + propsSize
+            size += variableByteSize(propsSize.toInt()).toUInt() + propsSize
             return size
         }
 
@@ -125,7 +123,7 @@ data class SubscribeAcknowledgement(val variable: VariableHeader, val payload: L
             }
 
             fun serialize(buffer: WriteBuffer) {
-                buffer.writeVariableByteInteger(size())
+                buffer.writeVariableByteInteger(size().toInt())
                 props.forEach { it.write(buffer) }
             }
 

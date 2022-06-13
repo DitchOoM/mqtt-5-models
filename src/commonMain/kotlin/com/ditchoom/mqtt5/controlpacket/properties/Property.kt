@@ -1,11 +1,9 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE")
-
 package com.ditchoom.mqtt5.controlpacket.properties
 
-import com.ditchoom.buffer.ParcelablePlatformBuffer
+import com.ditchoom.buffer.PlatformBuffer
 import com.ditchoom.buffer.ReadBuffer
 import com.ditchoom.buffer.WriteBuffer
-import com.ditchoom.buffer.allocateNewBuffer
+import com.ditchoom.buffer.allocate
 import com.ditchoom.mqtt.MalformedPacketException
 import com.ditchoom.mqtt.ProtocolError
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.readMqttUtf8StringNotValidatedSized
@@ -66,9 +64,9 @@ fun HashMap<Int, Any>.addProperty(property: Property?) {
     put(property.identifierByte.toInt(), property)
 }
 
-fun ReadBuffer.readPlatformBuffer(): ParcelablePlatformBuffer {
-    val size = readUnsignedShort().toUInt()
-    val buffer = allocateNewBuffer(size)
+fun ReadBuffer.readPlatformBuffer(): PlatformBuffer {
+    val size = readUnsignedShort().toInt()
+    val buffer = PlatformBuffer.allocate(size)
     buffer.write(readByteArray(size))
     buffer.resetForRead()
     return buffer
@@ -148,10 +146,10 @@ fun ReadBuffer.readPropertiesSized(): Pair<UInt, Collection<Property>?> {
     val propertyLength = readVariableByteInteger()
     val list = mutableListOf<Property>()
     var totalBytesRead = 0L
-    while (totalBytesRead < propertyLength.toInt()) {
+    while (totalBytesRead < propertyLength) {
         val (property, bytesRead) = readMqttProperty()
         totalBytesRead += bytesRead
         list += property
     }
-    return Pair(propertyLength, if (list.isEmpty()) null else list)
+    return Pair(propertyLength.toUInt(), if (list.isEmpty()) null else list)
 }

@@ -1,9 +1,7 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_OVERRIDE")
-
 package com.ditchoom.mqtt5.controlpacket
 
 import com.ditchoom.buffer.Parcelable
-import com.ditchoom.buffer.ParcelablePlatformBuffer
+import com.ditchoom.buffer.PlatformBuffer
 import com.ditchoom.buffer.ReadBuffer
 import com.ditchoom.buffer.WriteBuffer
 import com.ditchoom.mqtt.MalformedPacketException
@@ -28,7 +26,7 @@ import com.ditchoom.mqtt5.controlpacket.properties.*
 data class AuthenticationExchange(val variable: VariableHeader) :
     ControlPacketV5(15, DirectionOfFlow.BIDIRECTIONAL) {
 
-    override fun remainingLength() = variable.size()
+    override fun remainingLength() = variable.size().toInt()
     override fun variableHeader(writeBuffer: WriteBuffer) = variable.serialize(writeBuffer)
 
     /**
@@ -67,7 +65,7 @@ data class AuthenticationExchange(val variable: VariableHeader) :
 
         fun size(): UInt {
             val propSize = properties.size()
-            return propSize + UByte.SIZE_BYTES.toUInt() + variableByteSize(propSize)
+            return propSize + UByte.SIZE_BYTES.toUInt() + variableByteSize(propSize.toInt()).toUInt()
         }
 
         fun serialize(writeBuffer: WriteBuffer) {
@@ -102,7 +100,7 @@ data class AuthenticationExchange(val variable: VariableHeader) :
                 val authReasonString = if (reasonString != null) ReasonString(reasonString) else null
                 val props = userProperty.map { UserProperty(it.first, it.second) }
                 val size = size()
-                writeBuffer.writeVariableByteInteger(size)
+                writeBuffer.writeVariableByteInteger(size.toInt())
                 authMethod?.write(writeBuffer)
                 authData?.write(writeBuffer)
                 authReasonString?.write(writeBuffer)
@@ -116,7 +114,7 @@ data class AuthenticationExchange(val variable: VariableHeader) :
                     var method: CharSequence? = null
                     var reasonString: CharSequence? = null
                     val userProperty = mutableListOf<Pair<CharSequence, CharSequence>>()
-                    var data: ParcelablePlatformBuffer? = null
+                    var data: PlatformBuffer? = null
                     keyValuePairs?.forEach {
                         when (it) {
                             is AuthenticationMethod -> {

@@ -1,15 +1,13 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_OVERRIDE")
-
 package com.ditchoom.mqtt5.controlpacket.properties
 
-import com.ditchoom.buffer.ParcelablePlatformBuffer
+import com.ditchoom.buffer.PlatformBuffer
 import com.ditchoom.buffer.WriteBuffer
 
-data class CorrelationData(val data: ParcelablePlatformBuffer) :
+data class CorrelationData(val data: PlatformBuffer) :
     Property(0x09, Type.BINARY_DATA, willProperties = true) {
     override fun size(): UInt {
         data.position(0)
-        return 1u + UShort.SIZE_BYTES.toUInt() + data.remaining()
+        return 1u + UShort.SIZE_BYTES.toUInt() + data.remaining().toUInt()
     }
 
     override fun write(buffer: WriteBuffer): UInt {

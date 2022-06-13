@@ -1,5 +1,3 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_OVERRIDE")
-
 package com.ditchoom.mqtt5.controlpacket
 
 import com.ditchoom.buffer.Parcelable
@@ -19,7 +17,6 @@ import com.ditchoom.mqtt.controlpacket.QualityOfService
 import com.ditchoom.mqtt.controlpacket.format.ReasonCode
 import com.ditchoom.mqtt.controlpacket.format.fixed.DirectionOfFlow
 import com.ditchoom.mqtt.controlpacket.utf8Length
-import com.ditchoom.mqtt.topic.Filter
 import com.ditchoom.mqtt5.controlpacket.SubscribeRequest.VariableHeader.Properties
 import com.ditchoom.mqtt5.controlpacket.properties.Property
 import com.ditchoom.mqtt5.controlpacket.properties.ReasonString
@@ -69,10 +66,10 @@ data class SubscribeRequest(val variable: VariableHeader, override val subscript
     override fun payload(writeBuffer: WriteBuffer) =
         subscriptions.forEach { (it as Subscription).serialize(writeBuffer) }
 
-    override fun remainingLength(): UInt {
+    override fun remainingLength(): Int {
         val variableSize = variable.size()
         val subSize = subscriptions.size()
-        return variableSize + subSize
+        return (variableSize + subSize).toInt()
     }
 
     /**
@@ -92,7 +89,7 @@ data class SubscribeRequest(val variable: VariableHeader, override val subscript
         val properties: Properties = Properties()
     ) : Parcelable {
         fun size() =
-            UShort.SIZE_BYTES.toUInt() + variableByteSize(properties.size()) + properties.size()
+            UShort.SIZE_BYTES.toUInt() + variableByteSize(properties.size().toInt()).toUInt() + properties.size()
 
         fun serialize(writeBuffer: WriteBuffer) {
             writeBuffer.write(packetIdentifier.toUShort())
@@ -160,7 +157,7 @@ data class SubscribeRequest(val variable: VariableHeader, override val subscript
             }
 
             fun serialize(buffer: WriteBuffer) {
-                buffer.writeVariableByteInteger(size())
+                buffer.writeVariableByteInteger(size().toInt())
                 props.forEach { it.write(buffer) }
             }
 
@@ -197,7 +194,7 @@ data class SubscribeRequest(val variable: VariableHeader, override val subscript
                 } else {
                     val propsData = buffer.readPropertiesSized()
                     val props = Properties.from(propsData.second)
-                    size += propsData.first + variableByteSize(propsData.first)
+                    size += propsData.first + variableByteSize(propsData.first.toInt()).toUInt()
                     Pair(size, VariableHeader(packetIdentifier, props))
                 }
             }
@@ -215,7 +212,7 @@ data class SubscribeRequest(val variable: VariableHeader, override val subscript
 
 @Parcelize
 data class Subscription(
-    override val topicFilter: Filter,
+    override val topicFilter: String,
     /**
      * Bits 0 and 1 of the Subscription Options represent Maximum QoS field. This gives the maximum
      * QoS level at which the Server can send Application Messages to the Client. It is a Protocol
@@ -256,7 +253,7 @@ data class Subscription(
 ) : ISubscription {
 
     fun serialize(writeBuffer: WriteBuffer) {
-        writeBuffer.writeMqttUtf8String(topicFilter.topicFilter)
+        writeBuffer.writeMqttUtf8String(topicFilter)
         val qosInt = maximumQos.integerValue
         val nlShifted = (if (noLocal) 1 else 0).shl(2)
         val rapShifted = (if (retainAsPublished) 1 else 0).shl(3)
@@ -266,7 +263,7 @@ data class Subscription(
     }
 
     fun size() =
-        (topicFilter.topicFilter.utf8Length() + UShort.SIZE_BYTES).toUInt() + Byte.SIZE_BYTES.toUInt()
+        (topicFilter.utf8Length() + UShort.SIZE_BYTES).toUInt() + Byte.SIZE_BYTES.toUInt()
 
     companion object {
         fun fromMany(buffer: ReadBuffer, remainingLength: UInt): Set<Subscription> {
@@ -283,7 +280,7 @@ data class Subscription(
         fun from(buffer: ReadBuffer): Pair<UInt, Subscription> {
             var size = 0.toUInt()
             val topic = buffer.readMqttUtf8StringNotValidatedSized()
-            size += topic.first + 2u
+            size += topic.first.toUInt() + 2u
             val topicFilter = topic.second
             val subOptionsInt = buffer.readUnsignedByte().toInt()
             size += 1u
@@ -311,7 +308,7 @@ data class Subscription(
             val qosBit1 = subOptionsInt.shl(6).shr(7) == 1
             val qosBit0 = subOptionsInt.shl(7).shr(7) == 1
             val qos = QualityOfService.fromBooleans(qosBit1, qosBit0)
-            return Pair(size, Subscription(Filter(topicFilter), qos, nlBit2, rapBit3, retainHandling))
+            return Pair(size, Subscription(topicFilter.toString(), qos, nlBit2, rapBit3, retainHandling))
         }
 
         fun from(
@@ -353,7 +350,7 @@ data class Subscription(
                 val noLocal = noLocalList?.get(index) ?: false
                 val retainAsPublished = retainAsPublishedList?.get(index) ?: false
                 val retainHandling = retainHandlingList?.get(index) ?: SEND_RETAINED_MESSAGES_AT_TIME_OF_SUBSCRIBE
-                subscriptions += Subscription(Filter(topic), qos[index], noLocal, retainAsPublished, retainHandling)
+                subscriptions += Subscription(topic.toString(), qos[index], noLocal, retainAsPublished, retainHandling)
             }
             return subscriptions
         }

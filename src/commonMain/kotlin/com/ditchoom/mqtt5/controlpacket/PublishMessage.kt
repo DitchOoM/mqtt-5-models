@@ -1,8 +1,3 @@
-@file:Suppress(
-    "EXPERIMENTAL_API_USAGE", "KDocUnresolvedReference", "EXPERIMENTAL_UNSIGNED_LITERALS", "DuplicatedCode",
-    "EXPERIMENTAL_OVERRIDE"
-)
-
 package com.ditchoom.mqtt5.controlpacket
 
 import com.ditchoom.buffer.*
@@ -28,7 +23,7 @@ import com.ditchoom.mqtt5.controlpacket.properties.*
 data class PublishMessage(
     val fixed: FixedHeader = FixedHeader(),
     val variable: VariableHeader,
-    val payload: ParcelablePlatformBuffer? = null
+    val payload: PlatformBuffer? = null
 ) :
     ControlPacketV5(IPublishMessage.controlPacketValue, DirectionOfFlow.BIDIRECTIONAL, fixed.flags), IPublishMessage {
     init {
@@ -57,6 +52,7 @@ data class PublishMessage(
             this
         }
     }
+
     override val qualityOfService: QualityOfService = fixed.qos
     override fun variableHeader(writeBuffer: WriteBuffer) = variable.serialize(writeBuffer)
     override fun payload(writeBuffer: WriteBuffer) {
@@ -65,12 +61,12 @@ data class PublishMessage(
         }
     }
 
-    override fun remainingLength(): UInt {
+    override fun remainingLength(): Int {
         var size = variable.size()
         if (payload != null) {
-            size += payload.remaining()
+            size += payload.remaining().toUInt()
         }
-        return size
+        return size.toInt()
     }
 
     override val topic = variable.topicName
@@ -276,7 +272,7 @@ data class PublishMessage(
                 size += UShort.SIZE_BYTES.toUInt()
             }
             val propsSize = properties.size()
-            size += variableByteSize(propsSize) + propsSize
+            size += variableByteSize(propsSize.toInt()).toUInt() + propsSize
             return size
         }
 
@@ -429,7 +425,7 @@ data class PublishMessage(
              *
              * Refer to section 4.10 for more information about Request / Response
              */
-            val correlationData: ParcelablePlatformBuffer? = null,
+            val correlationData: PlatformBuffer? = null,
             /**
              * 3.3.2.3.7 User Property
              *
@@ -543,7 +539,7 @@ data class PublishMessage(
 
             fun serialize(buffer: WriteBuffer) {
                 val size = size()
-                buffer.writeVariableByteInteger(size)
+                buffer.writeVariableByteInteger(size.toInt())
                 props.forEach { it.write(buffer) }
             }
 
@@ -553,7 +549,7 @@ data class PublishMessage(
                     var messageExpiryInterval: Long? = null
                     var topicAlias: Int? = null
                     var responseTopic: CharSequence? = null
-                    var correlationData: ParcelablePlatformBuffer? = null
+                    var correlationData: PlatformBuffer? = null
                     val userProperty = mutableListOf<Pair<CharSequence, CharSequence>>()
                     val subscriptionIdentifier = LinkedHashSet<Long>()
                     var contentType: CharSequence? = null
@@ -639,7 +635,7 @@ data class PublishMessage(
 
             fun from(buffer: ReadBuffer, isQos0: Boolean): Pair<UInt, VariableHeader> {
                 val result = buffer.readMqttUtf8StringNotValidatedSized()
-                var size = result.first + UShort.SIZE_BYTES.toUInt()
+                var size = result.first.toUInt() + UShort.SIZE_BYTES.toUInt()
                 val topicName = result.second
                 val packetIdentifier = if (isQos0) {
                     null
@@ -662,9 +658,9 @@ data class PublishMessage(
             val variableHeaderSized = VariableHeader.from(buffer, fixedHeader.qos == AT_MOST_ONCE)
             val variableHeader = variableHeaderSized.second
             val variableSize = variableHeaderSized.first
-            val size = remainingLength - variableSize
-            val payloadBuffer = if (size > 0u) {
-                val payloadBuffer = allocateNewBuffer(size)
+            val size = (remainingLength - variableSize).toInt()
+            val payloadBuffer = if (size > 0) {
+                val payloadBuffer = PlatformBuffer.allocate(size)
                 payloadBuffer.write(buffer.readByteArray(size))
                 payloadBuffer
             } else {

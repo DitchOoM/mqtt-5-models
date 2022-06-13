@@ -1,8 +1,3 @@
-@file:Suppress(
-    "EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS", "KDocUnresolvedReference",
-    "EXPERIMENTAL_OVERRIDE"
-)
-
 package com.ditchoom.mqtt5.controlpacket
 
 import com.ditchoom.buffer.*
@@ -99,7 +94,7 @@ data class ConnectionRequest(
         return null
     }
 
-    override fun remainingLength() = variableHeader.size() + payload.size()
+    override fun remainingLength() = (variableHeader.size() + payload.size()).toInt()
 
     @Parcelize
     data class VariableHeader(
@@ -605,7 +600,7 @@ data class ConnectionRequest(
             }
 
             fun serialize(writeBuffer: WriteBuffer) {
-                writeBuffer.writeVariableByteInteger(size())
+                writeBuffer.writeVariableByteInteger(size().toInt())
                 props.forEach { it.write(writeBuffer) }
             }
 
@@ -619,7 +614,7 @@ data class ConnectionRequest(
                     var requestProblemInformation: Boolean? = null
                     val userProperty = mutableListOf<Pair<CharSequence, CharSequence>>()
                     var authenticationMethod: CharSequence? = null
-                    var authenticationData: ParcelablePlatformBuffer? = null
+                    var authenticationData: PlatformBuffer? = null
                     keyValuePairs?.forEach {
                         when (it) {
                             is SessionExpiryInterval -> {
@@ -755,7 +750,7 @@ data class ConnectionRequest(
             var size = UShort.SIZE_BYTES.toUInt() + protocolName.utf8Length().toUInt()
             size += (2u * UByte.SIZE_BYTES.toUInt()) + UShort.SIZE_BYTES.toUInt()
             val propsSize = properties.size()
-            size += propsSize + variableByteSize(propsSize)
+            size += propsSize + variableByteSize(propsSize.toInt()).toUInt()
             return size
         }
 
@@ -871,7 +866,7 @@ data class ConnectionRequest(
          * @see <a href="https://docs.oasis-open.org/mqtt/mqtt/v5.0/cos02/mqtt-v5.0-cos02.html#_Toc1477359">
          *     3.1.3.4 Will Payload</a>
          */
-        val willPayload: ParcelablePlatformBuffer? = null,
+        val willPayload: PlatformBuffer? = null,
         /**
          * 3.1.3.5 User Name
          *
@@ -1004,7 +999,7 @@ data class ConnectionRequest(
              * @see <a href="https://docs.oasis-open.org/mqtt/mqtt/v5.0/cos02/mqtt-v5.0-cos02.html#_Request_/_Response">
              *     Section 4.10 Request Response</a>
              */
-            val correlationData: ParcelablePlatformBuffer? = null,
+            val correlationData: PlatformBuffer? = null,
             /**
              * 3.1.3.2.8 User Property
              *
@@ -1064,7 +1059,7 @@ data class ConnectionRequest(
             }
 
             fun serialize(buffer: WriteBuffer) {
-                buffer.writeVariableByteInteger(size())
+                buffer.writeVariableByteInteger(size().toInt())
                 props.forEach { it.write(buffer) }
             }
 
@@ -1076,7 +1071,7 @@ data class ConnectionRequest(
                     var messageExpiryIntervalSeconds: Long? = null
                     var contentType: CharSequence? = null
                     var responseTopic: CharSequence? = null
-                    var correlationData: ParcelablePlatformBuffer? = null
+                    var correlationData: PlatformBuffer? = null
                     val userProperty = mutableListOf<Pair<CharSequence, CharSequence>>()
                     val properties = buffer.readProperties() ?: return WillProperties()
                     properties.forEach {
@@ -1176,10 +1171,10 @@ data class ConnectionRequest(
             }
             if (willProperties != null) {
                 val willPropertiesSize = willProperties.size()
-                size += variableByteSize(willPropertiesSize) + willPropertiesSize
+                size += variableByteSize(willPropertiesSize.toInt()).toUInt() + willPropertiesSize
             }
             if (willPayload != null) {
-                size += willPayload.remaining()
+                size += willPayload.remaining().toUInt()
             }
             if (userName != null) {
                 size += (UShort.SIZE_BYTES + userName.utf8Length()).toUInt()
@@ -1205,8 +1200,8 @@ data class ConnectionRequest(
                     null
                 }
                 val willPayload = if (variableHeader.willFlag) {
-                    val size = buffer.readUnsignedShort().toUInt()
-                    val payloadBuffer = allocateNewBuffer(size)
+                    val size = buffer.readUnsignedShort().toInt()
+                    val payloadBuffer = PlatformBuffer.allocate(size)
                     payloadBuffer.write(buffer.readByteArray(size))
                     payloadBuffer.resetForRead()
                     payloadBuffer

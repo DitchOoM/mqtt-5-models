@@ -1,9 +1,7 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_OVERRIDE")
-
 package com.ditchoom.mqtt5.controlpacket
 
 import com.ditchoom.buffer.Parcelable
-import com.ditchoom.buffer.ParcelablePlatformBuffer
+import com.ditchoom.buffer.PlatformBuffer
 import com.ditchoom.buffer.ReadBuffer
 import com.ditchoom.buffer.WriteBuffer
 import com.ditchoom.mqtt.MalformedPacketException
@@ -33,7 +31,7 @@ data class ConnectionAcknowledgment(val header: VariableHeader = VariableHeader(
     override val connectionReason: String = header.connectReason.name
     override val sessionPresent: Boolean = header.sessionPresent
     override fun variableHeader(writeBuffer: WriteBuffer) = header.serialize(writeBuffer)
-    override fun remainingLength() = header.size()
+    override fun remainingLength() = header.size().toInt()
 
     /**
      * The Variable Header of the CONNACK Packet contains the following fields in the order: Connect Acknowledge Flags,
@@ -440,14 +438,14 @@ data class ConnectionAcknowledgment(val header: VariableHeader = VariableHeader(
             fun serialize(writeBuffer: WriteBuffer) {
                 var size = 0u
                 props.forEach { size += it.size() }
-                writeBuffer.writeVariableByteInteger(size)
+                writeBuffer.writeVariableByteInteger(size.toInt())
                 props.forEach { it.write(writeBuffer) }
             }
 
             fun size(): UInt {
                 var size = 0u
                 props.forEach { size += it.size() }
-                return size + variableByteSize(size)
+                return size + variableByteSize(size.toInt()).toUInt()
             }
 
             companion object {
@@ -468,7 +466,7 @@ data class ConnectionAcknowledgment(val header: VariableHeader = VariableHeader(
                     var responseInformation: CharSequence? = null
                     var serverReference: CharSequence? = null
                     var authenticationMethod: CharSequence? = null
-                    var authenticationData: ParcelablePlatformBuffer? = null
+                    var authenticationData: PlatformBuffer? = null
                     keyValuePairs?.forEach {
                         when (it) {
                             is SessionExpiryInterval -> {

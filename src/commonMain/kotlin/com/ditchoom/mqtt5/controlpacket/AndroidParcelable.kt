@@ -1,7 +1,6 @@
-@file:OptIn(ExperimentalMultiplatform::class)
-
 package com.ditchoom.mqtt5.controlpacket
 
+@OptIn(ExperimentalMultiplatform::class)
 @OptionalExpectation
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)

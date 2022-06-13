@@ -1,5 +1,3 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_OVERRIDE")
-
 package com.ditchoom.mqtt5.controlpacket
 
 import com.ditchoom.buffer.Parcelable
@@ -32,7 +30,7 @@ data class PublishRelease(val variable: VariableHeader) : ControlPacketV5(6, Dir
     override val packetIdentifier: Int = variable.packetIdentifier
     override fun expectedResponse() = PublishComplete(packetIdentifier.toUShort())
     override fun variableHeader(writeBuffer: WriteBuffer) = variable.serialize(writeBuffer)
-    override fun remainingLength() = variable.size()
+    override fun remainingLength() = variable.size().toInt()
 
     /**
      * 3.6.2 PUBREL Variable Header
@@ -78,7 +76,7 @@ data class PublishRelease(val variable: VariableHeader) : ControlPacketV5(6, Dir
             var size = UShort.SIZE_BYTES.toUInt()
             if (!canOmitReasonCodeAndProperties) {
                 val propsSize = properties.size()
-                size += UByte.SIZE_BYTES.toUInt() + variableByteSize(propsSize) + propsSize
+                size += UByte.SIZE_BYTES.toUInt() + variableByteSize(propsSize.toInt()).toUInt() + propsSize
             }
             return size
         }
@@ -145,7 +143,7 @@ data class PublishRelease(val variable: VariableHeader) : ControlPacketV5(6, Dir
             }
 
             fun serialize(buffer: WriteBuffer) {
-                buffer.writeVariableByteInteger(size())
+                buffer.writeVariableByteInteger(size().toInt())
                 props.forEach { it.write(buffer) }
             }
 

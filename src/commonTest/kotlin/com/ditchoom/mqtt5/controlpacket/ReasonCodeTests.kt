@@ -1,5 +1,3 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "TestFunctionName")
-
 package com.ditchoom.mqtt5.controlpacket
 
 import com.ditchoom.mqtt.controlpacket.format.ReasonCode.*

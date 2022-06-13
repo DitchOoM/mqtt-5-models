@@ -1,18 +1,15 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_OVERRIDE")
-
 package com.ditchoom.mqtt5.controlpacket
 
-import com.ditchoom.buffer.ParcelablePlatformBuffer
+import com.ditchoom.buffer.PlatformBuffer
 import com.ditchoom.buffer.ReadBuffer
 import com.ditchoom.mqtt.controlpacket.*
 import com.ditchoom.mqtt.controlpacket.format.ReasonCode
-import com.ditchoom.mqtt.topic.Filter
 
 @Parcelize
 object ControlPacketV5Factory : ControlPacketFactory {
 
-    override fun from(buffer: ReadBuffer, byte1: UByte, remainingLength: UInt) =
-        ControlPacketV5.from(buffer, byte1, remainingLength)
+    override fun from(buffer: ReadBuffer, byte1: UByte, remainingLength: Int) =
+        ControlPacketV5.from(buffer, byte1, remainingLength.toUInt())
 
 
     override fun pingRequest() = PingRequest
@@ -25,12 +22,12 @@ object ControlPacketV5Factory : ControlPacketFactory {
         packetIdentifier: Int?,
         retain: Boolean,
         topicName: CharSequence,
-        payload: ParcelablePlatformBuffer?,
+        payload: PlatformBuffer?,
         payloadFormatIndicator: Boolean,
         messageExpiryInterval: Long?,
         topicAlias: Int?,
         responseTopic: CharSequence?,
-        correlationData: ParcelablePlatformBuffer?,
+        correlationData: PlatformBuffer?,
         userProperty: List<Pair<CharSequence, CharSequence>>,
         subscriptionIdentifier: Set<Long>,
         contentType: CharSequence?
@@ -60,7 +57,7 @@ object ControlPacketV5Factory : ControlPacketFactory {
         serverReference: CharSequence?,
         userProperty: List<Pair<CharSequence, CharSequence>>
     ): ISubscribeRequest {
-        val subscription = Subscription(Filter(topicFilter), maximumQos)
+        val subscription = Subscription(topicFilter.toString(), maximumQos)
         return subscribe(
             packetIdentifier,
             setOf(subscription),

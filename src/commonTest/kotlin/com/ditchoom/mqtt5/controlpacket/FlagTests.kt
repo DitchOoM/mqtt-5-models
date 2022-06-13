@@ -1,13 +1,11 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
-
 package com.ditchoom.mqtt5.controlpacket
 
-import com.ditchoom.buffer.allocateNewBuffer
+import com.ditchoom.buffer.PlatformBuffer
+import com.ditchoom.buffer.allocate
 import com.ditchoom.buffer.toBuffer
 import com.ditchoom.mqtt.controlpacket.QualityOfService.*
 import com.ditchoom.mqtt.controlpacket.format.ReasonCode.*
 import com.ditchoom.mqtt.controlpacket.format.fixed.get
-import com.ditchoom.mqtt.topic.Filter
 import com.ditchoom.mqtt5.controlpacket.PublishMessage.FixedHeader
 import com.ditchoom.mqtt5.controlpacket.PublishMessage.VariableHeader
 import com.ditchoom.mqtt5.controlpacket.properties.Authentication
@@ -88,7 +86,7 @@ class FlagTests {
             detailed.controlPacketValue, 0x03,
             "Invalid Byte 1 in the fixed header: Control Packet Value"
         )
-        val buffer = allocateNewBuffer(8u)
+        val buffer = PlatformBuffer.allocate(8)
         detailed.serialize(buffer)
         buffer.resetForRead()
         val byteAsUInt = buffer.readByte().toUInt()
@@ -213,7 +211,7 @@ class FlagTests {
             0b10,
             SubscribeRequest(
                 SubscribeRequest.VariableHeader(packetIdentifier),
-                setOf(Subscription(Filter("yolo")))
+                setOf(Subscription("yolo"))
             ).flags,
             controlPacketSpectMatchError
         )

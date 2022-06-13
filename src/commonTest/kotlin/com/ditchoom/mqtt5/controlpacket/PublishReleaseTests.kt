@@ -1,8 +1,7 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
-
 package com.ditchoom.mqtt5.controlpacket
 
-import com.ditchoom.buffer.allocateNewBuffer
+import com.ditchoom.buffer.PlatformBuffer
+import com.ditchoom.buffer.allocate
 import com.ditchoom.mqtt.ProtocolError
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.readMqttUtf8StringNotValidatedSized
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.readVariableByteInteger
@@ -24,11 +23,11 @@ class PublishReleaseTests {
     @Test
     fun packetIdentifier() {
         val pubrel = PublishRelease(VariableHeader(packetIdentifier))
-        val buffer = allocateNewBuffer(4u)
+        val buffer = PlatformBuffer.allocate(4)
         pubrel.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b01100010, buffer.readByte(), "fixed header byte1")
-        assertEquals(2u, buffer.readVariableByteInteger(), "fixed header byte2 remaining length")
+        assertEquals(2, buffer.readVariableByteInteger(), "fixed header byte2 remaining length")
         assertEquals(packetIdentifier, buffer.readUnsignedShort().toInt(), "variable header byte 1-2")
         buffer.resetForRead()
         val pubrelResult = ControlPacketV5.from(buffer) as PublishRelease
@@ -38,12 +37,12 @@ class PublishReleaseTests {
     @Test
     fun defaultAndNonDefaultSuccessDeserialization() {
         val pubrel = PublishRelease(VariableHeader(packetIdentifier))
-        val bufferNonDefaults = allocateNewBuffer(6u)
+        val bufferNonDefaults = PlatformBuffer.allocate(6)
         bufferNonDefaults.write(0b01100010.toByte())
-        bufferNonDefaults.writeVariableByteInteger(4u)
+        bufferNonDefaults.writeVariableByteInteger(4)
         bufferNonDefaults.write(packetIdentifier.toUShort())
         bufferNonDefaults.write(0.toUByte())
-        bufferNonDefaults.writeVariableByteInteger(0u)
+        bufferNonDefaults.writeVariableByteInteger(0)
         bufferNonDefaults.resetForRead()
         val pubrelResult = ControlPacketV5.from(bufferNonDefaults) as PublishRelease
         assertEquals(pubrel, pubrelResult)
@@ -68,14 +67,14 @@ class PublishReleaseTests {
                 properties = VariableHeader.Properties(reasonString = "yolo")
             )
         )
-        val buffer = allocateNewBuffer(13u)
+        val buffer = PlatformBuffer.allocate(13)
         expected.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b01100010, buffer.readByte(), "fixed header byte1")
-        assertEquals(11u, buffer.readVariableByteInteger(), "fixed header byte2 remaining length")
+        assertEquals(11, buffer.readVariableByteInteger(), "fixed header byte2 remaining length")
         assertEquals(packetIdentifier, buffer.readUnsignedShort().toInt(), "variable header byte 1-2")
         assertEquals(ReasonCode.SUCCESS.byte, buffer.readUnsignedByte(), "reason code")
-        assertEquals(7u, buffer.readVariableByteInteger(), "property length")
+        assertEquals(7, buffer.readVariableByteInteger(), "property length")
         assertEquals(0x1F, buffer.readByte(), "user property identifier")
         assertEquals("yolo", buffer.readMqttUtf8StringNotValidatedSized().second.toString(), "reason string")
         buffer.resetForRead()
@@ -88,8 +87,8 @@ class PublishReleaseTests {
     fun reasonStringMultipleTimesThrowsProtocolError() {
         val obj1 = ReasonString("yolo")
         val obj2 = obj1.copy()
-        val buffer = allocateNewBuffer(15u)
-        buffer.writeVariableByteInteger(obj1.size() + obj2.size())
+        val buffer = PlatformBuffer.allocate(15)
+        buffer.writeVariableByteInteger((obj1.size() + obj2.size()).toInt())
         obj1.write(buffer)
         obj2.write(buffer)
         buffer.resetForRead()
@@ -107,7 +106,7 @@ class PublishReleaseTests {
         }
         assertEquals(userPropertyResult.size, 1)
 
-        val buffer = allocateNewBuffer(19u)
+        val buffer = PlatformBuffer.allocate(19)
         val request = PublishRelease(VariableHeader(packetIdentifier, properties = props))
         request.serialize(buffer)
         buffer.resetForRead()

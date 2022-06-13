@@ -1,8 +1,7 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
-
 package com.ditchoom.mqtt5.controlpacket
 
-import com.ditchoom.buffer.allocateNewBuffer
+import com.ditchoom.buffer.PlatformBuffer
+import com.ditchoom.buffer.allocate
 import com.ditchoom.mqtt.ProtocolError
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.readMqttUtf8StringNotValidatedSized
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.readVariableByteInteger
@@ -25,15 +24,15 @@ class SubscribeRequestTest {
     fun simpleTest() {
         val subscribeRequest = SubscribeRequest(2.toUShort(), "test", AT_LEAST_ONCE)
         assertEquals(subscribeRequest.variable.packetIdentifier, 2)
-        assertEquals(subscribeRequest.subscriptions.first().topicFilter.validate().toString(), "test")
-        val buffer = allocateNewBuffer(12u)
+        assertEquals(Filter(subscribeRequest.subscriptions.first().topicFilter).validate().toString(), "test")
+        val buffer = PlatformBuffer.allocate(12)
         subscribeRequest.serialize(buffer)
         buffer.resetForRead()
         // fixed header 2 bytes
         // byte 1 fixed header
         assertEquals(0b10000010.toUByte(), buffer.readUnsignedByte())
         // byte 2 fixed header
-        assertEquals(10u, buffer.readVariableByteInteger())
+        assertEquals(10, buffer.readVariableByteInteger())
 
         // Variable header 3 bytes
         // byte 1 & 2 variable header as Ushort for packet identifier
@@ -61,7 +60,7 @@ class SubscribeRequestTest {
         assertEquals(0b00000001, buffer.readByte())
         buffer.resetForRead()
         val requestRead = ControlPacketV5.from(buffer) as SubscribeRequest
-        assertEquals(requestRead.subscriptions.first().topicFilter.validate().toString(), "test")
+        assertEquals(Filter(requestRead.subscriptions.first().topicFilter).validate().toString(), "test")
         assertEquals(AT_LEAST_ONCE, requestRead.subscriptions.first().maximumQos)
     }
 
@@ -69,14 +68,14 @@ class SubscribeRequestTest {
     fun serialized() {
         val subscribeRequest = SubscribeRequest(2.toUShort(), listOf("a/b", "c/d"), listOf(AT_LEAST_ONCE, EXACTLY_ONCE))
         assertEquals(subscribeRequest.variable.packetIdentifier, 2)
-        val buffer = allocateNewBuffer(17u)
+        val buffer = PlatformBuffer.allocate(17)
         subscribeRequest.serialize(buffer)
         buffer.resetForRead()
         // fixed header 2 bytes
         // byte 1 fixed header
         assertEquals(0b10000010.toUByte(), buffer.readUnsignedByte())
         // byte 2 fixed header
-        assertEquals(15u, buffer.readVariableByteInteger())
+        assertEquals(15, buffer.readVariableByteInteger())
 
         // Variable header 3 bytes
         // byte 1 & 2 variable header as Ushort for packet identifier
@@ -121,7 +120,7 @@ class SubscribeRequestTest {
     @Test
     fun subscriptionPayloadOptions() {
         val subscription = Subscription.from("a/b", AT_LEAST_ONCE)
-        val buffer = allocateNewBuffer(6u)
+        val buffer = PlatformBuffer.allocate(6)
         subscription.serialize(buffer)
         buffer.resetForRead()
         assertEquals("a/b", buffer.readMqttUtf8StringNotValidatedSized().second.toString())
@@ -130,12 +129,12 @@ class SubscribeRequestTest {
 
     @Test
     fun reasonString() {
-        val buffer = allocateNewBuffer(19u)
+        val buffer = PlatformBuffer.allocate(19)
         val actual = SubscribeRequest(
             VariableHeader(
                 packetIdentifier.toInt(),
                 properties = VariableHeader.Properties(reasonString = "yolo")
-            ), setOf(Subscription(Filter("test")))
+            ), setOf(Subscription("test"))
         )
         actual.serialize(buffer)
         buffer.resetForRead()
@@ -147,8 +146,8 @@ class SubscribeRequestTest {
     fun reasonStringMultipleTimesThrowsProtocolError() {
         val obj1 = ReasonString("yolo")
         val obj2 = obj1.copy()
-        val buffer = allocateNewBuffer(15u)
-        buffer.writeVariableByteInteger(obj1.size() + obj2.size())
+        val buffer = PlatformBuffer.allocate(15)
+        buffer.writeVariableByteInteger((obj1.size() + obj2.size()).toInt())
         obj1.write(buffer)
         obj2.write(buffer)
         buffer.resetForRead()
@@ -168,9 +167,9 @@ class SubscribeRequestTest {
 
         val request = SubscribeRequest(
             VariableHeader(packetIdentifier.toInt(), properties = props),
-            setOf(Subscription(Filter("test")))
+            setOf(Subscription("test"))
         )
-        val buffer = allocateNewBuffer(25u)
+        val buffer = PlatformBuffer.allocate(25)
         request.serialize(buffer)
         buffer.resetForRead()
         val requestRead = ControlPacketV5.from(buffer) as SubscribeRequest

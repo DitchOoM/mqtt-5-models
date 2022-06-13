@@ -1,8 +1,7 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_UNSIGNED_LITERALS")
-
 package com.ditchoom.mqtt5.controlpacket
 
-import com.ditchoom.buffer.allocateNewBuffer
+import com.ditchoom.buffer.PlatformBuffer
+import com.ditchoom.buffer.allocate
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.readMqttUtf8StringNotValidatedSized
 import com.ditchoom.mqtt.controlpacket.ControlPacket.Companion.readVariableByteInteger
 import com.ditchoom.mqtt5.controlpacket.UnsubscribeRequest.VariableHeader
@@ -16,18 +15,18 @@ class UnsubscribeRequestTests {
 
     @Test
     fun basicTest() {
-        val buffer = allocateNewBuffer(11u)
+        val buffer = PlatformBuffer.allocate(11)
         val unsub = UnsubscribeRequest(VariableHeader(packetIdentifier), setOf("yolo"))
         unsub.serialize(buffer)
         buffer.resetForRead()
         assertEquals(0b10100010.toByte(), buffer.readByte(), "fixed header byte 1")
-        assertEquals(9u, buffer.readVariableByteInteger(), "fixed header byte 2 remaining length")
+        assertEquals(9, buffer.readVariableByteInteger(), "fixed header byte 2 remaining length")
         assertEquals(
             packetIdentifier.toUShort(),
             buffer.readUnsignedShort(),
             "variable header byte 1-2 packet identifier"
         )
-        assertEquals(0u, buffer.readVariableByteInteger(), "variable header byte 3 property length")
+        assertEquals(0, buffer.readVariableByteInteger(), "variable header byte 3 property length")
         assertEquals("yolo", buffer.readMqttUtf8StringNotValidatedSized().second.toString(), "payload topic")
         buffer.resetForRead()
         val result = ControlPacketV5.from(buffer) as UnsubscribeRequest
@@ -47,7 +46,7 @@ class UnsubscribeRequestTests {
 
         val request =
             UnsubscribeRequest(VariableHeader(packetIdentifier, properties = props), setOf("test"))
-        val buffer = allocateNewBuffer(24u)
+        val buffer = PlatformBuffer.allocate(24)
         request.serialize(buffer)
         buffer.resetForRead()
         val requestRead = ControlPacketV5.from(buffer) as UnsubscribeRequest

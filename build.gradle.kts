@@ -1,10 +1,10 @@
 plugins {
-    kotlin("multiplatform") version "1.6.10"
+    kotlin("multiplatform") version "1.6.20"
     id("com.android.library")
     id("io.codearte.nexus-staging") version "0.30.0"
     `maven-publish`
     signing
-    id("org.jetbrains.kotlin.plugin.parcelize") version "1.6.10"
+    id("org.jetbrains.kotlin.plugin.parcelize") version "1.6.20"
 }
 
 val libraryVersionPrefix: String by project
@@ -12,6 +12,7 @@ group = "com.ditchoom"
 version = "$libraryVersionPrefix.0-SNAPSHOT"
 
 repositories {
+    mavenLocal()
     google()
     mavenCentral()
 }
@@ -35,7 +36,7 @@ kotlin {
                 cssSupport.enabled = true
             }
         }
-        nodejs{ }
+        nodejs { }
     }
     macosX64()
     linuxX64()
@@ -47,8 +48,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api("com.ditchoom:mqtt-base-models:1.0.28")
-                implementation("com.ditchoom:buffer:1.0.56")
+                api("com.ditchoom:mqtt-base-models:1.0.30")
+                implementation("com.ditchoom:buffer:1.0.82")
             }
         }
         val commonTest by getting {
@@ -68,7 +69,7 @@ android {
     }
     lintOptions {
         isQuiet = true
-        isAbortOnError =  false
+        isAbortOnError = false
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8

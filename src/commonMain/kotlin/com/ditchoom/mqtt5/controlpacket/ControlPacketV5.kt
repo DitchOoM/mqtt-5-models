@@ -1,5 +1,3 @@
-@file:Suppress("EXPERIMENTAL_API_USAGE", "KDocUnresolvedReference")
-
 package com.ditchoom.mqtt5.controlpacket
 
 import com.ditchoom.buffer.ReadBuffer
@@ -30,7 +28,7 @@ abstract class ControlPacketV5(
 
         fun fromTyped(buffer: ReadBuffer): ControlPacketV5 {
             val byte1 = buffer.readUnsignedByte()
-            val remainingLength = buffer.readVariableByteInteger()
+            val remainingLength = buffer.readVariableByteInteger().toUInt()
             return fromTyped(buffer, byte1, remainingLength)
         }
 
