@@ -47,8 +47,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api("com.ditchoom:mqtt-base-models:1.0.32")
-                implementation("com.ditchoom:buffer:1.0.83")
+                api("com.ditchoom:mqtt-base-models:1.0.33")
+                implementation("com.ditchoom:buffer:1.0.85")
             }
         }
         val commonTest by getting {
@@ -63,7 +63,7 @@ android {
     compileSdkVersion(31)
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     defaultConfig {
-        minSdkVersion(1)
+        minSdkVersion(9)
         targetSdkVersion(31)
     }
     lintOptions {
